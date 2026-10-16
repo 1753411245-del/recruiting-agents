@@ -1,0 +1,17 @@
+# 本地项目记忆/缓存（切勿提交）
+.workbuddy/
+
+# Python（如后续加入 Python 工具）
+__pycache__/
+*.pyc
+*.db
+venv/
+.venv/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.idea/
+.vscode/
