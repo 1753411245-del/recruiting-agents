@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>农资招聘 · 业务解码画布</title>
+<style>
+  :root{
+    --green:#2e7d32; --green-50:#e8f3e9; --green-100:#c8e6c9; --green-200:#a5d6a7;
+    --amber:#c77f12; --amber-50:#faf0dd;
+    --blue:#185FA5; --teal:#0F6E56; --purple:#534AB7;
+    --ink:#1f2a22; --muted:#5f6b62; --line:#dce4dc;
+    --bg:#f6f8f4; --card:#ffffff; --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;padding:24px}
+  .wrap{max-width:1100px;margin:0 auto}
+  header{background:var(--green);color:#fff;border-radius:var(--radius);padding:22px 26px;margin-bottom:18px}
+  header h1{font-size:20px;font-weight:600}
+  header p{font-size:13px;opacity:.92;margin-top:6px}
+  .badge{display:inline-block;background:rgba(255,255,255,.18);border-radius:999px;padding:3px 12px;font-size:12px;margin-right:8px;margin-top:8px}
+  .position{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  .pos{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .pos h3{font-size:13px;color:var(--green);margin-bottom:6px}
+  .pos p{font-size:13px;color:var(--muted)}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .tab{padding:9px 16px;border:1px solid var(--line);background:var(--card);border-radius:999px;cursor:pointer;font-size:13px;color:var(--muted);transition:.15s}
+  .tab:hover{border-color:var(--green-200)}
+  .tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+  .panel{display:none;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .panel.active{display:block}
+  h2.sec{font-size:15px;margin-bottom:14px;color:var(--ink)}
+  .layer{display:grid;grid-template-columns:52px 1fr;gap:14px;margin-bottom:14px;align-items:start}
+  .layer .num{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:18px}
+  .l1{background:var(--blue)} .l2{background:var(--teal)} .l3{background:var(--amber)} .l4{background:var(--purple)}
+  .layer .body{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fcfdfb}
+  .layer .body h4{font-size:14px;margin-bottom:4px}
+  .layer .body .tech{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .layer .body ul{margin-left:18px;font-size:13px;color:var(--muted)}
+  .layer .body li{margin-bottom:3px}
+  .canvas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .cell{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fcfdfb;min-height:104px}
+  .cell h4{font-size:12px;color:var(--green);margin-bottom:4px}
+  .cell p{font-size:12px;color:var(--muted)}
+  .funnel .step{margin-bottom:12px}
+  .funnel .label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .funnel .label b{color:var(--ink)}
+  .funnel .bar{height:28px;background:var(--green-100);border-radius:6px;position:relative;overflow:hidden}
+  .funnel .bar>span{position:absolute;left:0;top:0;height:100%;background:var(--green);border-radius:6px;display:flex;align-items:center;padding-left:8px;color:#fff;font-size:12px}
+  .funnel .bar.bottleneck>span{background:var(--amber)}
+  .funnel .note{font-size:12px;color:var(--amber);margin-top:6px;background:var(--amber-50);padding:8px 12px;border-radius:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--green-50);color:var(--green);font-weight:600}
+  td.sm{font-size:12px;color:var(--muted)}
+  .todo h4{font-size:13px;color:var(--ink);margin:14px 0 6px}
+  .todo label{display:flex;gap:10px;align-items:flex-start;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer;color:var(--muted)}
+  .todo label:hover{border-color:var(--green-200)}
+  .todo input{margin-top:3px;width:16px;height:16px;accent-color:var(--green)}
+  .todo .who{color:var(--green);font-size:12px;font-weight:600}
+  .foot{font-size:12px;color:var(--muted);margin-top:18px;text-align:center}
+  @media(max-width:760px){.position,.canvas{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>农资招聘 · 业务解码画布</h1>
+    <p>把"招到能服务农资店老板的好人才"这件说不清的事，拆成可理解、可衡量、可执行的动作。</p>
+    <div>
+      <span class="badge">客户目标：农资店老板</span>
+      <span class="badge">三岗位：销售 / 新媒体 / 电销</span>
+      <span class="badge">工具：Boss直聘 自动筛简历 + 打招呼</span>
+      <span class="badge">解码日期：2026-10-15</span>
+    </div>
+  </header>
+
+  <div class="position">
+    <div class="pos">
+      <h3>我们是谁</h3>
+      <p>农资企业的招聘团队，用自动化工具有效、合规、防封地批量触达 Boss直聘 上的候选人。</p>
+    </div>
+    <div class="pos">
+      <h3>客户是谁（价值接收方）</h3>
+      <p><b>农资店老板</b>——他们需要"能下沉到乡镇、会动销、懂农资"的一线人才，把货卖出去、把种植户服务好。</p>
+    </div>
+    <div class="pos">
+      <h3>价值主张</h3>
+      <p>持续、低成本、合规地为农资企业输送"能服务农资店老板"的销售力与运营力。</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-t="1">① 四层解码</div>
+    <div class="tab" data-t="2">② 业务画布（9格）</div>
+    <div class="tab" data-t="3">③ 招聘漏斗</div>
+    <div class="tab" data-t="4">④ 指标体系</div>
+    <div class="tab" data-t="5">⑤ 行动清单</div>
+  </div>
+
+  <!-- ① 四层解码 -->
+  <div class="panel active" id="p1">
+    <h2 class="sec">从"看清结构"到"落地执行"的四层解码</h2>
+
+    <div class="layer">
+      <div class="num l1">1</div>
+      <div class="body">
+        <h4>第一层 · 看清业务结构（洋葱模型）</h4>
+        <div class="tech">方法：洋葱模型 / 5W2H / 业务要素建模</div>
+        <ul>
+          <li><b>表层</b>：Boss直聘 职位发布、简历筛选、自动打招呼、面试安排</li>
+          <li><b>中层</b>：三层过滤规则（硬性门槛 → 关键匹配 → 加分信号）、人才库沉淀、断点续跑</li>
+          <li><b>核心层</b>：价值主张=帮农资企业持续获取"能服务农资店老板"的销售力</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="num l2">2</div>
+      <div class="body">
+        <h4>第二层 · 找关键路径与瓶颈（价值流图 / TOC）</h4>
+        <div class="tech">方法：价值流图 / TOC约束理论 / 因果循环图</div>
+        <ul>
+          <li>主线：简历触达 → 打招呼通过 → 邀约 → 到面 → 入职 → 服务农资店动销</li>
+          <li>当前最卡环节（假设）：<b>打招呼通过 → 邀约</b>，根因多为简历质量与"关键匹配"层规则过松/过严</li>
+          <li>用 TOC 思路：先把瓶颈环节的规则调准，再扩量，避免无效打招呼触顶每日上限</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="num l3">3</div>
+      <div class="body">
+        <h4>第三层 · 量化指标与归因（SMART + PDCA）</h4>
+        <div class="tech">方法：SMART + PDCA / 因果链法 / MECE</div>
+        <ul>
+          <li>把"招到好销售"拆成可量化指标：周打招呼数、通过率、邀约率、到面率、入职率、转正率</li>
+          <li>每层过滤规则对应一条因果链：放宽/收紧某关键词 → 影响通过率 → 影响最终入职质量</li>
+          <li>用 PDCA 每周迭代一次三层过滤规则（详见"指标体系"页）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="num l4">4</div>
+      <div class="body">
+        <h4>第四层 · 战略落地执行（三层解码）</h4>
+        <div class="tech">方法：三层解码（解业务→解任务→解协同）/ 战略地图 + OKR</div>
+        <ul>
+          <li><b>解业务</b>：把"招到好销售"转成具体打法——三个岗位分别怎么服务农资店老板</li>
+          <li><b>解任务</b>：筛选规则 CRUD、人才库建设、自动打招呼机器人（操作间隔≥5s、每日上限~95、验证码即停）</li>
+          <li><b>解协同</b>：共享规则库 + 各自登录态，团队对齐"谁负责哪个环节"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 业务画布 -->
+  <div class="panel" id="p2">
+    <h2 class="sec">农资招聘业务画布（商业模式画布 9 格）</h2>
+    <div class="canvas">
+      <div class="cell"><h4>客户细分</h4><p>① 农资企业 HR / 老板（直接用工具）<br>② 农资店老板（人才最终服务对象）</p></div>
+      <div class="cell"><h4>价值主张</h4><p>高效、防封、合规地批量触达 + 三层筛选候选人才，降低错招成本</p></div>
+      <div class="cell"><h4>渠道通路</h4><p>Boss直聘（年费 VIP 账号）， headed 有界面运行防封最稳</p></div>
+      <div class="cell"><h4>客户关系</h4><p>自动化打招呼 + 人工兜底面试；人才库长期沉淀复捞</p></div>
+      <div class="cell"><h4>收入来源</h4><p>内部：招聘效率与质量提升 → 隐性成本节约；错招率下降</p></div>
+      <div class="cell"><h4>核心资源</h4><p>年费 VIP 账号、三层筛选规则库、本地人才库 SQLite、断点续跑能力</p></div>
+      <div class="cell"><h4>关键业务</h4><p>自动筛简历 + 自动打招呼 + 人才库沉淀 + 每周规则迭代</p></div>
+      <div class="cell"><h4>重要伙伴</h4><p>Boss直聘平台（数据源）、同事（共享规则 + 各自登录态）</p></div>
+      <div class="cell"><h4>成本结构</h4><p>VIP 年费、人工面试时间、工具维护成本、合规风险成本</p></div>
+    </div>
+    <p class="foot">中间三格（价值主张 / 关键业务 / 核心资源）是农资招聘的"发动机"，优先打磨。</p>
+  </div>
+
+  <!-- ③ 招聘漏斗 -->
+  <div class="panel" id="p3">
+    <h2 class="sec">招聘漏斗 · 价值流（示例数据，待填入真实值）</h2>
+    <div class="funnel">
+      <div class="step"><div class="label"><span>① 简历触达（日）</span><b>120</b></div><div class="bar"><span style="width:100%">100%</span></div></div>
+      <div class="step"><div class="label"><span>② 自动打招呼（日上限）</span><b>95</b></div><div class="bar"><span style="width:79%">79%</span></div></div>
+      <div class="step"><div class="label"><span>③ 通过 / 回复</span><b>33</b></div><div class="bar"><span style="width:35%">35%</span></div></div>
+      <div class="step"><div class="label"><span>④ 邀约面试</span><b>17</b></div><div class="bar bottleneck"><span style="width:18%">18%</span></div></div>
+      <div class="step"><div class="label"><span>⑤ 实际到面</span><b>9</b></div><div class="bar"><span style="width:9%">9%</span></div></div>
+      <div class="step"><div class="label"><span>⑥ 入职</span><b>4</b></div><div class="bar"><span style="width:4%">4%</span></div></div>
+      <div class="step"><div class="label"><span>⑦ 转正后服务农资店动销</span><b>目标</b></div><div class="bar"><span style="width:3%;background:var(--teal)">待度量</span></div></div>
+      <div class="note">瓶颈高亮：<b>③通过 → ④邀约</b> 衰减最大，优先优化"关键匹配"层规则与打招呼话术，而非盲目加量（受每日 95 上限约束）。</div>
+    </div>
+  </div>
+
+  <!-- ④ 指标体系 -->
+  <div class="panel" id="p4">
+    <h2 class="sec">可量化指标体系（SMART + PDCA 迭代）</h2>
+    <table>
+      <thead><tr><th>指标</th><th>定义 / 口径</th><th>目标值</th><th>当前（示例）</th><th>PDCA 迭代方式</th></tr></thead>
+      <tbody>
+        <tr><td>周打招呼数</td><td class="sm">每周实际发出且未被拦截的打招呼</td><td class="sm">≈ 上限内跑满</td><td class="sm">~95/日</td><td class="sm">P：保持间隔≥5s；C：验证码即停</td></tr>
+        <tr><td>打招呼通过率</td><td class="sm">回复/通过 ÷ 打招呼数</td><td class="sm">≥ 40%</td><td class="sm">35%</td><td class="sm">A：优化话术与时段；D：A/B 测试</td></tr>
+        <tr><td>邀约率</td><td class="sm">邀约面试 ÷ 通过数</td><td class="sm">≥ 55%</td><td class="sm">52%</td><td class="sm">A：收紧"关键匹配"误放行；D：复盘</td></tr>
+        <tr><td>到面率</td><td class="sm">实际到面 ÷ 邀约数</td><td class="sm">≥ 50%</td><td class="sm">53%</td><td class="sm">C：自动化提醒 + 改期兜底</td></tr>
+        <tr><td>入职率</td><td class="sm">入职 ÷ 到面数</td><td class="sm">≥ 45%</td><td class="sm">44%</td><td class="sm">A：面试话术对齐岗位画像</td></tr>
+        <tr><td>转正 / 动销率</td><td class="sm">转正且服务农资店产生动销 ÷ 入职</td><td class="sm">建立基线</td><td class="sm">待度量</td><td class="sm">P：定义口径；D：每月复盘</td></tr>
+      </tbody>
+    </table>
+    <p class="foot">每格"当前"列标注"示例"，请用工件实跑一周的真实数据替换；带"待度量"的指标先铺采集，不急着定目标。</p>
+  </div>
+
+  <!-- ⑤ 行动清单 -->
+  <div class="panel" id="p5">
+    <h2 class="sec">三层解码 · 行动清单（可勾选）</h2>
+    <div class="todo">
+      <h4>解业务（把"招到好销售"转成打法）</h4>
+      <label><input type="checkbox"><span><span class="who">招聘主管</span>　明确三岗位各自如何服务农资店老板：销售=线下拜访铺货；新媒体=账号引流老板IP；电销=电话推品邀约</span></label>
+      <label><input type="checkbox"><span><span class="who">招聘主管</span>　写出每个岗位的"硬性门槛 / 关键匹配 / 加分信号"关键词清单</span></label>
+
+      <h4>解任务（把打法拆成可执行的动作）</h4>
+      <label><input type="checkbox"><span><span class="who">工具</span>　在配置面板完成三岗位筛选规则的 CRUD，并本地 SQLite 人才库落库</span></label>
+      <label><input type="checkbox"><span><span class="who">工具</span>　跑 dry-run 预览版，确认三层过滤命中逻辑无误再上线</span></label>
+      <label><input type="checkbox"><span><span class="who">工具</span>　设硬约束：操作间隔≥5s、每日上限~95、验证码即停、断点续跑</span></label>
+      <label><input type="checkbox"><span><span class="who">招聘主管</span>　每周用指标体系表跑一次 PDCA，迭代一层/二层过滤规则</span></label>
+
+      <h4>解协同（确保任务在团队间衔接）</h4>
+      <label><input type="checkbox"><span><span class="who">团队</span>　导出共享规则库，同事各自用自己登录态运行，避免共用账号封号</span></label>
+      <label><input type="checkbox"><span><span class="who">团队</span>　对齐"谁看漏斗、谁面试、谁跟入职"，避免 KPI 完成但整体目标没达成</span></label>
+      <label><input type="checkbox"><span><span class="who">招聘主管</span>　把漏斗真实数据回填到本画布第③页，定位下一周瓶颈</span></label>
+    </div>
+    <p class="foot">勾选项仅本地记录，刷新不保存；建议每周五对照勾一遍，作为解码复盘。</p>
+  </div>
+
+  <p class="foot">农资招聘业务解码画布 · 基于洋葱模型 / 价值流图 / TOC / SMART-PDCA / 三层解码 / 商业模式画布 综合生成</p>
+</div>
+
+<script>
+  const tabs=document.querySelectorAll('.tab');
+  const panels={1:document.getElementById('p1'),2:document.getElementById('p2'),3:document.getElementById('p3'),4:document.getElementById('p4'),5:document.getElementById('p5')};
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    Object.values(panels).forEach(p=>p.classList.remove('active'));
+    t.classList.add('active');
+    panels[t.dataset.t].classList.add('active');
+  }));
+</script>
+</body>
+</html>
