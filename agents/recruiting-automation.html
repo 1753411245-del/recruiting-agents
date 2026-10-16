@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通用招聘流程自动化与数据看板智能体</title>
+<style>
+:root{
+  --primary:#1a3a6b; --primary-light:#eef3fb; --accent:#d9822b; --accent-light:#fdf3e7;
+  --bg:#f5f7fa; --card:#ffffff; --border:#e2e8f0; --text:#1f2937; --muted:#6b7280;
+  --green:#16a34a; --green-light:#ecfdf3; --red:#dc2626; --red-light:#fef2f2;
+  --amber:#d97706; --amber-light:#fffbeb; --blue:#2563eb; --blue-light:#eff6ff;
+  --purple:#7c3aed; --purple-light:#ede9fe;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+header{background:linear-gradient(135deg,#122a52,#1a3a6b 60%,#245092);color:#fff;padding:22px 32px;}
+header h1{font-size:22px;letter-spacing:1px;}
+header p{margin-top:6px;font-size:12.5px;opacity:.85;}
+.layer-tags{display:inline-flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.layer-tags span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);padding:3px 12px;border-radius:12px;font-size:12px;}
+nav{display:flex;gap:4px;background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:20;overflow-x:auto;}
+nav button{border:none;background:none;padding:13px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;}
+nav button.active{color:var(--primary);border-bottom-color:var(--accent);font-weight:bold;}
+nav button:hover{color:var(--primary);}
+main{max-width:1280px;margin:0 auto;padding:22px 24px 60px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.card h3{font-size:15px;color:var(--primary);margin-bottom:4px;}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+label{display:block;font-size:12.5px;font-weight:bold;color:#374151;margin:10px 0 4px;}
+label .tip{font-weight:normal;color:var(--muted);font-size:11.5px;}
+textarea,input[type=text],input[type=number],input[type=date],select{width:100%;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fbfcfe;resize:vertical;}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,58,107,.1);}
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;margin:4px 4px 0 0;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:#245092;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-accent:hover{background:#c06f1e;}
+.btn-ghost{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+.btn-ghost:hover{background:var(--primary-light);}
+.btn-danger{background:#fff;color:var(--red);border:1px solid var(--red);}
+.btn-sm{padding:4px 10px;font-size:12px;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:bold;}
+.badge.A{background:var(--green-light);color:var(--green);border:1px solid #a7f3c9;}
+.badge.B{background:var(--amber-light);color:var(--amber);border:1px solid #fcd34d;}
+.badge.C{background:var(--red-light);color:var(--red);border:1px solid #fca5a5;}
+.badge.warn{background:var(--amber-light);color:var(--amber);}
+.badge.dead{background:#f3f4f6;color:var(--muted);}
+.badge.ok{background:var(--green-light);color:var(--green);}
+.badge.info{background:var(--blue-light);color:var(--blue);}
+.badge.purple{background:var(--purple-light);color:var(--purple);}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:var(--primary-light);color:var(--primary);text-align:left;padding:8px 10px;font-weight:bold;}
+td{border-top:1px solid var(--border);padding:8px 10px;vertical-align:top;}
+tr:hover td{background:#fafbfd;}
+.summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+.stat{flex:1;min-width:130px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;text-align:center;}
+.stat b{font-size:24px;display:block;}
+.stat span{font-size:12px;color:var(--muted);}
+.stat.sA b{color:var(--green);} .stat.sB b{color:var(--amber);} .stat.sC b{color:var(--red);} .stat.sT b{color:var(--primary);} .stat.sP b{color:var(--purple);}
+.warn{background:var(--amber-light);border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;}
+.ok-msg{background:var(--green-light);border:1px solid #a7f3c9;color:#166534;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.ok-msg.show{display:block;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{font-size:11.5px;padding:3px 10px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:inline-flex;align-items:center;gap:6px;}
+.chip.hot{background:var(--red-light);color:var(--red);}
+.chip.warm{background:var(--amber-light);color:#92400e;}
+.chip button{border:none;background:rgba(0,0,0,.06);border-radius:8px;padding:1px 6px;cursor:pointer;font-size:11px;font-family:inherit;}
+.chip button:hover{background:rgba(0,0,0,.14);}
+.funnel-row{display:flex;align-items:center;gap:10px;margin:7px 0;}
+.funnel-label{width:88px;font-size:12.5px;font-weight:bold;color:var(--primary);text-align:right;flex-shrink:0;}
+.funnel-bar{height:30px;border-radius:5px;display:flex;align-items:center;padding:0 10px;color:#fff;font-size:12.5px;font-weight:bold;min-width:44px;transition:width .4s;}
+.funnel-meta{font-size:11.5px;color:var(--muted);flex:1;}
+.drop-tag{font-size:11.5px;color:var(--red);font-weight:bold;}
+.pipe-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.pipe-col{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:8px;min-height:120px;}
+.pipe-col h5{font-size:12px;color:var(--primary);margin-bottom:6px;padding-bottom:4px;border-bottom:1px dashed var(--border);}
+.pipe-col h5 b{float:right;color:var(--muted);font-weight:normal;}
+.copy-area{width:100%;min-height:220px;background:#fbfcfe;font-size:12.5px;line-height:1.7;}
+.muted{color:var(--muted);font-size:12px;}
+.mt10{margin-top:10px;}
+.hr{border:none;border-top:1px dashed var(--border);margin:14px 0;}
+.role-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;margin-bottom:16px;}
+.role-bar select{width:auto;min-width:150px;}
+.conn{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin:6px 0;font-size:12.5px;}
+.footnote{font-size:11.5px;color:var(--muted);line-height:1.8;margin-top:6px;}
+@media (max-width:900px){.grid2,.grid3,.pipe-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📊 通用招聘流程自动化与数据看板智能体</h1>
+  <p>输入层：采集与读取 ｜ 输出层：交付物 ｜ 落地配套：产品与实施 —— 全链路数据一处沉淀，不重复录入；候选人数据本地留存，隐私不出本机</p>
+  <div class="layer-tags">
+    <span>01 全链路流程数据</span><span>02 各智能体产出汇聚</span><span>03 时间与漏斗口径</span><span>04 数据源对接</span><span>05 看板配置偏好</span>
+    <span>A 招聘漏斗看板</span><span>B 关键指标监控</span><span>C 流程自动化流转</span><span>D 异常与瓶颈分析</span><span>E 报表与复盘</span>
+    <span>⚙ 口径统一 / 权限脱敏 / 规则引擎 / 人工复核留痕</span>
+  </div>
+</header>
+
+<nav id="nav">
+  <button class="active" data-p="p1">📥 输入层 · 数据采集</button>
+  <button data-p="p2">📊 招聘漏斗看板</button>
+  <button data-p="p3">📈 关键指标监控</button>
+  <button data-p="p4">🔄 流程自动化流转</button>
+  <button data-p="p5">🚨 异常与瓶颈分析</button>
+  <button data-p="p6">📄 报表与复盘</button>
+  <button data-p="p7">⚙️ 落地配套</button>
+</nav>
+
+<main>
+<div class="role-bar">
+  <b style="font-size:12.5px;color:var(--primary);">👀 当前角色视角：</b>
+  <select id="roleSel" onchange="setRole()">
+    <option value="hrbp">HRBP（全量明细）</option>
+    <option value="dept">部门负责人（本部门）</option>
+    <option value="exec">管理层（仅聚合 · 脱敏）</option>
+  </select>
+  <select id="deptSel" onchange="setRole()" style="display:none;"></select>
+  <label style="margin:0;display:flex;align-items:center;gap:5px;font-size:12.5px;">
+    <input type="checkbox" id="maskChk" checked onchange="setRole()">候选人数据脱敏（姓名打码 / 电话隐藏）
+  </label>
+  <span class="muted" id="roleTip"></span>
+</div>
+
+<!-- ============ 面板1 输入层 ============ -->
+<div class="panel active" id="p1">
+  <div class="card">
+    <h3>01 全链路流程数据 · 候选人录入</h3>
+    <div class="sub">覆盖 JD发布 → 简历投递 → 初筛 → 面试安排 → 反馈 → offer → 入职各节点；数据一次录入，全看板共用（落地配套02：数据口径统一）</div>
+    <div class="grid3">
+      <div>
+        <label>姓名</label><input type="text" id="cName" placeholder="候选人姓名">
+        <label>联系电话</label><input type="text" id="cPhone" placeholder="选填">
+        <label>应聘岗位</label><select id="cJob"></select>
+        <label>来源渠道</label>
+        <select id="cSource">
+          <option>Boss直聘</option><option>内推</option><option>猎头</option><option>主动投递</option><option>官网/其他</option>
+        </select>
+      </div>
+      <div>
+        <label>当前环节</label>
+        <select id="cStage"></select>
+        <label>初筛分级（如有）</label>
+        <select id="cRating"><option value="">未分级</option><option value="A">A 优先推进</option><option value="B">B 备选</option><option value="C">C 不匹配</option></select>
+        <label>招聘负责人</label>
+        <select id="cOwner"></select>
+      </div>
+      <div>
+        <label>备注 / 流失原因</label>
+        <textarea id="cNote" rows="4" placeholder="如：offer流失-薪资原因 / 爽约-未提前告知 等"></textarea>
+        <button class="btn btn-primary mt10" onclick="addCandidate()">＋ 录入候选人</button>
+        <button class="btn btn-ghost" onclick="fillDemo()">随机演示数据</button>
+      </div>
+    </div>
+    <div class="ok-msg" id="addOk"></div>
+  </div>
+
+  <div class="card">
+    <h3>02 各智能体产出导入 · 与全链路智能体打通</h3>
+    <div class="sub">直接粘贴 / 导入「简历筛选智能体」「人才寻访智能体」「AI面试题智能体」等产出的 JSON 结果，自动汇聚进流程，不重复录入（落地配套01）</div>
+    <div class="grid2">
+      <div>
+        <label>粘贴 JSON（支持数组：姓名/岗位/分级/环节）</label>
+        <textarea id="impArea" rows="7" placeholder='示例：[{"name":"张三","job":"市场销售","rating":"A","stage":"初筛通过"},{"name":"李四","job":"新媒体运营","rating":"B"}]'></textarea>
+        <button class="btn btn-primary mt10" onclick="importAgents()">导入并进入流程</button>
+        <input type="file" id="impFile" accept=".json,.txt" style="display:none" onchange="loadImpFile(event)">
+        <button class="btn btn-ghost mt10" onclick="document.getElementById('impFile').click()">从文件导入</button>
+      </div>
+      <div>
+        <label>映射说明</label>
+        <table>
+          <tr><th>来源智能体字段</th><th>进入本流程</th></tr>
+          <tr><td>name / 姓名</td><td>候选人</td></tr>
+          <tr><td>job / 岗位</td><td>应聘岗位（不匹配则新建）</td></tr>
+          <tr><td>rating / 分级 A/B/C</td><td>初筛分级；A/B → 初筛通过，C → 淘汰</td></tr>
+          <tr><td>stage / 环节</td><td>当前环节（缺省按分级落位）</td></tr>
+        </table>
+        <div class="footnote">导入即写入操作日志，支持人工复核修正。</div>
+      </div>
+    </div>
+    <div class="ok-msg" id="impOk"></div>
+  </div>
+
+  <div class="card">
+    <h3>04 数据源对接状态</h3>
+    <div class="sub">本地版以「模拟接入」标记对接位；接入真实 ATS/OA/日历/邮箱后，各节点数据自动写入，无需手工录入</div>
+    <div id="connList"></div>
+    <div class="footnote">🔒 数据源配置仅保存在本机，不向第三方上传候选人隐私。</div>
+  </div>
+
+  <div class="card">
+    <h3>05 看板配置偏好 &amp; 03 时间与漏斗口径</h3>
+    <div class="sub">看板维度、指标口径、预警阈值、汇报对象——统一一次配置，所有人看同一套数（落地配套02：避免不同人各算各的数）</div>
+    <div class="grid3">
+      <div>
+        <label>招聘周期口径</label>
+        <select id="cfgCycle">
+          <option value="join">投递 → 入职（默认）</option>
+          <option value="offer">投递 → offer接受</option>
+        </select>
+        <label>漏斗统计口径</label>
+        <select id="cfgFunnel">
+          <option value="reach">到达口径（含后续流失，看转化）</option>
+          <option value="active">在办口径（仅当前停留，看存量）</option>
+        </select>
+      </div>
+      <div>
+        <label>预警阈值（低于即红）</label>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><span class="muted">面试到场率%</span><input type="number" id="cfgShow" value="70"></div>
+          <div style="flex:1;"><span class="muted">offer接受率%</span><input type="number" id="cfgAcc" value="60"></div>
+          <div style="flex:1;"><span class="muted">到岗率%</span><input type="number" id="cfgJoin" value="80"></div>
+        </div>
+        <label>刷新频率 / 汇报对象</label>
+        <div style="display:flex;gap:8px;">
+          <select id="cfgRefresh" style="flex:1;"><option>手动刷新</option><option>每日</option><option>每周一 09:00</option><option>每月1日</option></select>
+          <select id="cfgReportTo" style="flex:1;"><option>HRBP</option><option>部门负责人</option><option>管理层</option></select>
+        </div>
+      </div>
+      <div>
+        <label>阶段超时定义（天，逗号分隔对应各环节）</label>
+        <input type="text" id="cfgDwell" value="2,3,3,2,3,2,3,7,15">
+        <div class="footnote">顺序：投递→初筛通过→待约面试→已约面试→面试完成→待反馈→offer待发→offer已发→offer接受（→入职）</div>
+        <button class="btn btn-primary mt10" onclick="saveCfg()">保存配置</button>
+      </div>
+    </div>
+    <div class="ok-msg" id="cfgOk"></div>
+  </div>
+</div>
+
+<!-- ============ 面板2 漏斗看板 ============ -->
+<div class="panel" id="p2">
+  <div class="summary" id="fStats"></div>
+  <div class="card">
+    <h3>招聘漏斗看板 · 投递→初筛→面试→offer→入职</h3>
+    <div class="sub" id="fSub">到达口径：每一层统计“曾到达该环节”的候选人，层间差值即流失点</div>
+    <div id="funnelBox"></div>
+  </div>
+  <div class="card">
+    <h3>分岗位漏斗对比</h3>
+    <div class="sub">定位哪个岗位在哪个环节卡壳（输出层04：异常与瓶颈的漏斗视角）</div>
+    <div id="funnelJobs"></div>
+  </div>
+</div>
+
+<!-- ============ 面板3 指标监控 ============ -->
+<div class="panel" id="p3">
+  <div class="card">
+    <h3>关键指标监控</h3>
+    <div class="sub">在招HC、招聘周期、到岗率、面试到场率、offer接受率、人效——口径见「落地配套」，红色为跌破阈值</div>
+    <div class="summary" id="kpiStats"></div>
+    <div id="kpiAlert"></div>
+  </div>
+  <div class="card">
+    <h3>分岗位 / 分负责人指标</h3>
+    <div class="sub">人效 = 该负责人已入职人数；周期按当前口径计算</div>
+    <div class="grid2">
+      <div><h3 style="font-size:13px;">按岗位</h3><div id="kpiJobs"></div></div>
+      <div><h3 style="font-size:13px;">按招聘负责人</h3><div id="kpiOwners"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 面板4 流程自动化 ============ -->
+<div class="panel" id="p4">
+  <div class="card">
+    <h3>流程自动化流转 · 候选人状态看板</h3>
+    <div class="sub">状态自动流转：待筛 / 待约 / 待反馈 / 待发offer 节点提醒与超时预警；点击候选人可推进 / 终止，全部动作留痕</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-accent" onclick="runRules(true)">▶ 执行自动化规则</button>
+      <span class="muted">规则内容在「落地配套 · 自动化规则引擎」中维护；超时自动催办、爽约自动标记、节点自动推进需人工复核确认。</span>
+    </div>
+    <div id="pipeBoard" class="mt10"></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>🔔 节点提醒与超时预警</h3>
+      <div class="sub">由规则引擎扫描生成，处理后在操作日志留痕</div>
+      <div id="alertList"></div>
+    </div>
+    <div class="card">
+      <h3>✅ 待人工复核事项</h3>
+      <div class="sub">“自动推进 / 自动标记”类动作不直接生效，需人工确认（落地配套05：关键决策人工确认）</div>
+      <div id="reviewList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 面板5 异常瓶颈 ============ -->
+<div class="panel" id="p5">
+  <div class="card">
+    <h3>卡壳环节 · 各阶段停留分析</h3>
+    <div class="sub">平均停留天数超过口径阈值的环节标红，即当前最大瓶颈</div>
+    <div id="dwellBox"></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>流失构成</h3>
+      <div class="sub">爽约高发环节、offer流失原因、淘汰原因分布</div>
+      <div id="dropBox"></div>
+    </div>
+    <div class="card">
+      <h3>招聘官工作量分布</h3>
+      <div class="sub">在办候选人数 / 本月推进动作数，识别负荷不均</div>
+      <div id="loadBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 面板6 报表复盘 ============ -->
+<div class="panel" id="p6">
+  <div class="card">
+    <h3>周报 / 月报生成</h3>
+    <div class="sub">自动汇总漏斗、指标、异常与下周待办，可复制粘贴到邮件/企微/文档</div>
+    <button class="btn btn-primary" onclick="genReport('周')">生成本周招聘报告</button>
+    <button class="btn btn-ghost" onclick="genReport('月')">生成本月招聘报告</button>
+    <button class="btn btn-accent" onclick="copyReport()">复制报告内容</button>
+    <textarea id="reportArea" class="copy-area mt10" placeholder="点击上方按钮生成报告…"></textarea>
+  </div>
+  <div class="card">
+    <h3>岗位进度追踪 &amp; 候选人状态清单</h3>
+    <div class="sub">岗位维度 HC 占用进度；清单可导出 CSV 供 Excel 复盘</div>
+    <div id="jobTrack"></div>
+    <button class="btn btn-primary mt10" onclick="exportCSV()">⬇ 导出候选人状态清单 (CSV)</button>
+    <button class="btn btn-ghost" onclick="exportAll()">⬇ 备份全量数据 (JSON)</button>
+    <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreAll(event)">
+    <button class="btn btn-ghost" onclick="document.getElementById('restoreFile').click()">⬆ 恢复备份</button>
+  </div>
+</div>
+
+<!-- ============ 面板7 落地配套 ============ -->
+<div class="panel" id="p7">
+  <div class="card">
+    <h3>02 数据口径统一</h3>
+    <div class="sub">各环节与指标的定义在此维护并公示，全员同口径（修改即留痕）</div>
+    <div class="grid2">
+      <div>
+        <label>环节定义</label>
+        <textarea id="defStages" rows="9"></textarea>
+      </div>
+      <div>
+        <label>指标定义</label>
+        <textarea id="defMetrics" rows="9"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary mt10" onclick="saveDefs()">保存口径定义</button>
+    <span class="muted"> 保存后看板提示语同步更新。</span>
+  </div>
+
+  <div class="card">
+    <h3>04 自动化规则引擎</h3>
+    <div class="sub">超时自动催办、爽约自动标记、节点自动推进与提醒——规则可增删启停，动作留痕</div>
+    <div id="ruleList"></div>
+    <div class="hr"></div>
+    <div class="grid3">
+      <div><label>规则名称</label><input type="text" id="rName" placeholder="如：待发offer超时预警"></div>
+      <div>
+        <label>监控环节 / 超时天数</label>
+        <div style="display:flex;gap:8px;">
+          <select id="rStage" style="flex:2;"></select>
+          <input type="number" id="rDays" value="2" style="flex:1;" title="超时天数">
+        </div>
+      </div>
+      <div>
+        <label>触发动作</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="rAction" style="flex:2;">
+            <option>催办提醒</option><option>标记预警</option><option>自动推进（需复核）</option>
+          </select>
+          <button class="btn btn-primary btn-sm" style="flex:1;" onclick="addRule()">＋添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>05 人工复核与留痕 · 操作日志</h3>
+    <div class="sub">数据异常可下钻溯源；自动动作需人工确认；操作日志可审计（默认保留最近 300 条）</div>
+    <div id="logBox" style="max-height:320px;overflow:auto;"></div>
+  </div>
+</div>
+</main>
+
+<footer style="max-width:1280px;margin:0 auto;padding:0 24px 30px;font-size:11.5px;color:var(--muted);line-height:1.8;">
+  全部数据保存在浏览器本地（localStorage），不上传任何服务器；角色视角与脱敏用于演示权限与合规策略，正式落地时对接 ATS/OA 权限体系。
+  与「简历筛选智能体 / 人才寻访智能体 / AI面试题智能体」通过 JSON 导入打通。
+</footer>
+
+<script>
+/* ================= 常量与状态 ================= */
+const LS_KEY="recruit_flow_dashboard_v1";
+const STAGES=["投递","初筛通过","待约面试","已约面试","面试完成","待反馈","offer待发","offer已发","offer接受","已入职"];
+const STAGE_COLOR=["#94a3b8","#64748b","#2563eb","#3b82f6","#0ea5e9","#8b5cf6","#d97706","#d9822b","#16a34a","#15803d"];
+const DEAD=["淘汰","爽约","拒offer","流失"];
+const OWNERS=["李经理","王主管","陈顾问"];
+const DEPTS=["销售部","运营部"];
+const R1=()=>{ // 简易伪随机（种子固定，演示数据稳定）
+  let s=42; return ()=>{s=(s*9301+49297)%233280;return s/233280;};
+};
+
+let S=null; // 全局状态
+let curPanel="p1";
+
+function defaultDefs(){
+  return {
+    stages:STAGES.map((s,i)=>(i+1)+". "+s+"："+
+      ({ "投递":"简历投递进入人才池，待初筛",
+         "初筛通过":"初筛分级A/B，进入约面",
+         "待约面试":"已通过初筛，沟通面试时间中",
+         "已约面试":"已确定面试时间，待到场",
+         "面试完成":"面试结束，待面试官反馈",
+         "待反馈":"反馈回收中 / 评估结论待确认",
+         "offer待发":"拟录用，走offer审批",
+         "offer已发":"offer已发出，待候选人答复",
+         "offer接受":"候选人接受offer，待到岗",
+         "已入职":"完成入职" }[s]||"")),
+    metrics:"在招HC：岗位编制 − 已入职\n招聘周期：投递→入职（可在配置切换为投递→offer接受）\n到岗率：已入职 ÷ offer接受\n面试到场率：面试完成 ÷ 已约面试\noffer接受率：offer接受 ÷ offer已发\n人效：按招聘负责人的已入职人数"
+  };
+}
+
+function seed(){
+  const rnd=R1();
+  const names=["张伟","王芳","李娜","刘强","陈静","杨帆","赵磊","黄敏","周涛","吴倩","徐明","孙丽","马超","朱琳","胡军","郭欣","何平","高远","林悦","罗成","郑爽","梁波","谢婷","宋健","唐雪","韩磊","冯瑞","曹颖","彭飞","董洁","袁泉","蔡斌","余婷","杜鹏","苏红","程亮"];
+  const jobs=[
+    {id:"j1",name:"市场销售",dept:"销售部",hc:4,hired:1,owner:"李经理"},
+    {id:"j2",name:"新媒体运营",dept:"运营部",hc:2,hired:0,owner:"王主管"},
+    {id:"j3",name:"电话销售",dept:"销售部",hc:6,hired:2,owner:"李经理"}
+  ];
+  const sources=["Boss直聘","内推","猎头","主动投递"];
+  const offerLost=["薪资低于预期","接受了竞对offer","通勤距离","岗位内容不符"];
+  const cands=[];let cid=1;
+  names.forEach((nm,i)=>{
+    const job=jobs[i%3];
+    // 加权决定最远到达环节：越往后概率越低
+    const r=rnd();
+    let far;
+    if(r<0.14)far=0; else if(r<0.30)far=1; else if(r<0.44)far=2;
+    else if(r<0.58)far=3; else if(r<0.68)far=4; else if(r<0.76)far=5;
+    else if(r<0.84)far=6; else if(r<0.90)far=7; else if(r<0.95)far=8; else far=9;
+    const history=[];let t=60-i*1.4-rnd()*4;
+    for(let st=0;st<=far;st++){
+      history.push({t:Math.round(t),from:st===0?null:STAGES[st-1],to:STAGES[st],by:OWNERS[i%3]});
+      t-= (1+rnd()*5);
+    }
+    let status="active",note="",deadStage=null;
+    // 终止分支
+    if(far<=3 && rnd()<0.45){status="淘汰";note= rnd()<0.5?"硬性条件不符":"经验不匹配";deadStage=STAGES[far];}
+    if(far===3 && status==="active" && rnd()<0.35){status="爽约";note="约面后未到场未提前告知";}
+    if(far===7 && rnd()<0.5){status="拒offer";note="offer流失-"+offerLost[Math.floor(rnd()*offerLost.length)];}
+    if(status==="active"&&far>=9)status="active";
+    const rating=far>=1?(["A","A","B","B","C"][Math.floor(rnd()*5)]):"";
+    cands.push({
+      id:"c"+(cid++),name:nm,phone:"138****"+(1000+Math.floor(rnd()*8999)),
+      job:job.name,dept:job.dept,source:sources[Math.floor(rnd()*sources.length)],
+      owner:OWNERS[i%3],rating,status,note,deadStage,
+      stage:status==="active"?STAGES[far]:deadStage||STAGES[far],
+      history
+    });
+  });
+  const defs=defaultDefs();
+  return {
+    jobs,cands,
+    seq:cid,
+    rules:[
+      {id:"r1",name:"待筛超时催办",stage:"投递",days:2,action:"催办提醒",on:true},
+      {id:"r2",name:"待约超时催办",stage:"初筛通过",days:3,action:"催办提醒",on:true},
+      {id:"r3",name:"面试反馈超时自动推进",stage:"面试完成",days:3,action:"自动推进（需复核）",on:true},
+      {id:"r4",name:"offer审批超时预警",stage:"offer待发",days:2,action:"标记预警",on:true},
+      {id:"r5",name:"已约面试超时未到场标记",stage:"已约面试",days:2,action:"自动推进（需复核）",on:true},
+      {id:"r6",name:"接受offer后超时未入职",stage:"offer接受",days:7,action:"催办提醒",on:true}
+    ],
+    cfg:{cycle:"join",funnel:"reach",show:70,acc:60,join:80,refresh:"每周一 09:00",reportTo:"管理层",dwell:"2,3,3,2,3,2,3,7,15"},
+    defs,
+    role:"hrbp",dept:"销售部",mask:true,
+    logs:[],alerts:[],reviews:[]
+  };
+}
+
+function load(){try{const raw=localStorage.getItem(LS_KEY);S=raw?JSON.parse(raw):seed();}catch(e){S=seed();}save();}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(S));}
+
+function log(action,detail){
+  S.logs.unshift({t:Date.now(),role:S.role,action,detail});
+  if(S.logs.length>300)S.logs.length=300;
+}
+
+/* ================= 工具函数 ================= */
+const now=()=>Date.now();
+const DAY=86400000;
+// history.t 用“距今天数”（负数表示过去），演示稳定；实时录入用绝对时间戳
+function stageEnterT(c,stage){
+  let best=null;
+  c.history.forEach(h=>{if(h.to===stage){const v=h.t<9e11?h.t*DAY: h.t; if(best===null||v<best)best=v;}});
+  return best;
+}
+function dwellDays(c){
+  const t=currentStageStart(c);
+  if(t===null)return 0;
+  return Math.max(0,Math.floor((now()-(t<9e11? now()-(-t)*0 : t))/DAY))||Math.abs(t);
+}
+function currentStageStart(c){
+  // 当前环节的进入时间 = history 中最近一次 to==stage 的时间
+  let best=null;
+  c.history.forEach(h=>{if(h.to===c.stage){const v=h.t<9e11?h.t*DAY:h.t;if(best===null||v>best)best=v;}});
+  return best;
+}
+function dwellOf(c){
+  const t=currentStageStart(c);if(t===null)return 0;
+  return Math.floor((now()-t)/DAY);
+}
+function fmtT(ts){const d=new Date(ts);return d.getMonth()+1+"-"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
+function reachedCount(list,stageIdx){
+  // 曾到达 STAGES[stageIdx] 的候选人数
+  return list.filter(c=>{
+    if(c.history.some(h=>h.to===STAGES[stageIdx]))return true;
+    const idx=STAGES.indexOf(c.stage);
+    return idx>=stageIdx;
+  }).length;
+}
+function furthestIdx(c){
+  let m=STAGES.indexOf(c.stage);
+  c.history.forEach(h=>{const i=STAGES.indexOf(h.to);if(i>m)m=i;});
+  return m;
+}
+function visible(list){
+  let out=list;
+  if(S.role==="dept")out=out.filter(c=>c.dept===S.dept);
+  return out;
+}
+function maskName(nm){
+  if(!S.mask)return nm;
+  if(S.role==="exec")return nm[0]+"**";
+  if(S.role==="dept")return nm;
+  return nm;
+}
+function maskPhone(p){return S.mask?"（已隐藏）":(p||"—");}
+
+/* ================= 面板切换 ================= */
+document.getElementById("nav").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");curPanel=b.dataset.p;
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById(curPanel).classList.add("active");
+  renderAll();
+});
+
+function setRole(){
+  S.role=document.getElementById("roleSel").value;
+  S.mask=document.getElementById("maskChk").checked;
+  const dsel=document.getElementById("deptSel");
+  dsel.style.display=S.role==="dept"?"inline-block":"none";
+  dsel.innerHTML=DEPTS.map(d=>`<option ${d===S.dept?"selected":""}>${d}</option>`).join("");
+  S.dept=dsel.value;
+  document.getElementById("roleTip").textContent=
+    S.role==="hrbp"?"可见全量候选人明细与联系方式":
+    S.role==="dept"?"仅可见本部门候选人":"仅可见聚合看板，候选人明细自动脱敏";
+  save();renderAll();
+}
+
+/* ================= 面板1：录入/导入/数据源/配置 ================= */
+function refreshSelects(){
+  const j=document.getElementById("cJob");
+  j.innerHTML=S.jobs.map(x=>`<option value="${x.name}">${x.name}（HC ${x.hc}·已入职${x.hired}）</option>`).join("");
+  const st=document.getElementById("cStage");
+  st.innerHTML=STAGES.map(s=>`<option>${s}</option>`).join("")+DEAD.map(d=>`<option>${d}</option>`).join("");
+  const ow=document.getElementById("cOwner");
+  ow.innerHTML=OWNERS.map(o=>`<option>${o}</option>`).join("");
+}
+function fillDemo(){
+  const nm=["演示员"+Math.floor(Math.random()*90+10)][0];
+  document.getElementById("cName").value=nm;
+}
+function addCandidate(){
+  const name=document.getElementById("cName").value.trim();
+  if(!name){flash("addOk","请填写姓名",false);return;}
+  const job=document.getElementById("cJob").value;
+  const stage=document.getElementById("cStage").value;
+  const jb=S.jobs.find(x=>x.name===job)||{dept:"未分配"};
+  const c={
+    id:"c"+(S.seq++),name,phone:document.getElementById("cPhone").value.trim()||"",
+    job,dept:jb.dept||"未分配",source:document.getElementById("cSource").value,
+    owner:document.getElementById("cOwner").value,rating:document.getElementById("cRating").value,
+    status:DEAD.includes(stage)?stage:"active",note:document.getElementById("cNote").value.trim(),
+    deadStage:DEAD.includes(stage)?stage:null,stage,
+    history:[{t:now(),from:null,to:STAGES[0],by:document.getElementById("cOwner").value}]
+  };
+  if(STAGES.includes(stage))c.history.push({t:now(),from:STAGES[0],to:stage,by:S.role==="hrbp"?"HR":"人工"});
+  S.cands.unshift(c);
+  log("录入候选人",`${name} → ${job} · ${stage}`);
+  save();
+  document.getElementById("cName").value="";document.getElementById("cPhone").value="";document.getElementById("cNote").value="";
+  flash("addOk",`✅ 已录入：${name}（${job} · ${stage}）`,true);
+  renderAll();
+}
+function flash(id,msg,ok){
+  const el=document.getElementById(id);el.textContent=msg;el.className=ok?"ok-msg show":"warn show";
+  setTimeout(()=>el.classList.remove("show"),4000);
+}
+function importAgents(){
+  let arr;
+  try{arr=JSON.parse(document.getElementById("impArea").value);}catch(e){flash("impOk","JSON 解析失败，请检查格式",false);return;}
+  if(!Array.isArray(arr))arr=[arr];
+  let ok=0;
+  arr.forEach(o=>{
+    const name=o.name||o.姓名;if(!name)return;
+    const job=o.job||o.岗位||"未分配岗位";
+    if(!S.jobs.find(x=>x.name===job))S.jobs.push({id:"j"+(S.seq++),name:job,dept:"未分配",hc:1,hired:0,owner:OWNERS[0]});
+    const rating=o.rating||o.分级||"";
+    let stage=o.stage||o.环节||"";
+    if(!STAGES.includes(stage)&&!DEAD.includes(stage))stage=rating==="C"?"淘汰":"初筛通过";
+    const jb=S.jobs.find(x=>x.name===job);
+    S.cands.unshift({
+      id:"c"+(S.seq++),name,phone:o.phone||"",job,dept:jb?jb.dept:"未分配",
+      source:"智能体导入",owner:(jb&&jb.owner)||OWNERS[0],rating,
+      status:DEAD.includes(stage)?stage:"active",note:"来自智能体导入",
+      deadStage:DEAD.includes(stage)?stage:null,stage,
+      history:[{t:now(),from:null,to:"投递",by:"智能体"},{t:now(),from:"投递",to:stage,by:"智能体"}]
+    });
+    ok++;
+  });
+  log("智能体产出导入",`导入 ${ok} 条`);
+  save();
+  flash("impOk",`✅ 已导入 ${ok} 条进入招聘流程`,true);
+  document.getElementById("impArea").value="";
+  renderAll();
+}
+function loadImpFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{document.getElementById("impArea").value=r.result;importAgents();};r.readAsText(f,"utf-8");
+}
+function saveCfg(){
+  S.cfg={cycle:document.getElementById("cfgCycle").value,funnel:document.getElementById("cfgFunnel").value,
+    show:+document.getElementById("cfgShow").value,acc:+document.getElementById("cfgAcc").value,join:+document.getElementById("cfgJoin").value,
+    refresh:document.getElementById("cfgRefresh").value,reportTo:document.getElementById("cfgReportTo").value,
+    dwell:document.getElementById("cfgDwell").value};
+  log("修改看板配置","口径/阈值已更新");save();
+  flash("cfgOk","✅ 配置已保存，看板按新口径刷新",true);renderAll();
+}
+function renderConns(){
+  const conns=[
+    ["ATS / 招聘平台（Boss直聘等）","投递、初筛、面试节点自动写入","模拟接入"],
+    ["OA / HR系统","offer审批、入职办理状态","模拟接入"],
+    ["日历系统","面试排期自动同步","模拟接入"],
+    ["邮件","面试邀请 / offer 送达回执","模拟接入"],
+    ["企业微信","节点提醒推送、招聘官协同","模拟接入"]
+  ];
+  document.getElementById("connList").innerHTML=conns.map(c=>
+    `<div class="conn"><span><b>${c[0]}</b><br><span class="muted">${c[1]}</span></span><span class="badge info">${c[2]}</span></div>`).join("");
+}
+
+/* ================= 面板2：漏斗看板 ================= */
+function renderFunnel(){
+  const list=visible(S.cands);
+  const hiredAll=S.cands.filter(c=>c.stage==="已入职").length;
+  document.getElementById("fStats").innerHTML=[
+    ["在招HC",S.jobs.reduce((a,j)=>a+Math.max(0,j.hc-j.hired),0),"sT"],
+    ["候选人总数",list.length,"sT"],
+    ["流程中",list.filter(c=>c.status==="active").length,"sP"],
+    ["已入职",S.cands.filter(c=>c.stage==="已入职").length,"sA"],
+    ["整体转化率",list.length?Math.round(reachedCount(list,9)/reachedCount(list,0)*100)+"%":"—","sB"]
+  ].map(s=>`<div class="stat ${s[2]}"><b>${s[1]}</b><span>${s[0]}</span></div>`).join("");
+
+  const reach=S.cfg.funnel==="reach";
+  document.getElementById("fSub").textContent=reach
+    ?"到达口径：每一层统计“曾到达该环节”的候选人（含后续流失者），层间差值即该环节流失点"
+    :"在办口径：每一层统计当前停留在该环节的候选人（存量视角）";
+
+  let html="";
+  const total=reach?reachedCount(list,0):list.filter(c=>c.stage===STAGES[0]).length||1;
+  for(let i=0;i<STAGES.length;i++){
+    const n=reach?reachedCount(list,i):list.filter(c=>c.stage===STAGES[i]).length;
+    const w=Math.max(6,Math.round(n/Math.max(total,1)*520));
+    const conv=i===0?"100%":(reachedCount(list,i-1)?Math.round(n/reachedCount(list,i-1)*100)+"%":"—");
+    const drop=i===0?"":`<span class="drop-tag">流失 ${Math.max(0,reachedCount(list,i-1)-n)} 人（环节通过率 ${conv}）</span>`;
+    html+=`<div class="funnel-row">
+      <div class="funnel-label">${STAGES[i]}</div>
+      <div class="funnel-bar" style="width:${w}px;background:${STAGE_COLOR[i]};">${n} 人</div>
+      <div class="funnel-meta">${drop}</div></div>`;
+  }
+  document.getElementById("funnelBox").innerHTML=html;
+
+  document.getElementById("funnelJobs").innerHTML=S.jobs.map(j=>{
+    const jl=list.filter(c=>c.job===j.name);
+    const r0=reach?reachedCount(jl,0):1;
+    const inner=STAGES.map((s,i)=>{
+      const n=reach?reachedCount(jl,i):jl.filter(c=>c.stage===s).length;
+      const w=Math.max(4,Math.round(n/Math.max(r0,1)*300));
+      return `<div class="funnel-row"><div class="funnel-label" style="width:72px;font-size:11.5px;">${s}</div>
+        <div class="funnel-bar" style="height:20px;width:${w}px;background:${STAGE_COLOR[i]};font-size:11px;">${n}</div></div>`;
+    }).join("");
+    return `<div style="margin-bottom:14px;"><b style="font-size:13px;color:var(--primary);">${j.name}</b>
+      <span class="muted">（HC ${j.hc} · 已入职 ${j.hired} · 编制缺口 ${Math.max(0,j.hc-j.hired)}）</span>${inner}</div>`;
+  }).join("");
+}
+
+/* ================= 面板3：关键指标 ================= */
+function renderKPI(){
+  const list=visible(S.cands);
+  const all=S.cands;
+  const cnt=(arr,st)=>arr.filter(c=>c.stage===st).length;
+  const reached=(arr,i)=>reachedCount(arr,i);
+  const openHC=S.jobs.reduce((a,j)=>a+Math.max(0,j.hc-j.hired),0);
+  // 招聘周期：入职候选人的 投递→入职 天数
+  let cycArr=[];
+  S.cands.filter(c=>c.stage==="已入职").forEach(c=>{
+    const s=stageEnterT(c,"投递"),e=stageEnterT(c,"已入职");
+    if(s===null||e===null)return;
+    const sv=s<9e11?(now()+s*DAY):s, ev=e<9e11?(now()+e*DAY):e;
+    cycArr.push(Math.max(1,Math.round((ev-sv)/DAY)));
+  });
+  const avgCyc=cycArr.length?Math.round(cycArr.reduce((a,b)=>a+b,0)/cycArr.length):null;
+  const showRate=reached(all,3)?Math.round(reached(all,4)/reached(all,3)*100):null;
+  const accRate=reached(all,7)?Math.round(reached(all,8)/reached(all,7)*100):null;
+  const joinRate=reached(all,8)?Math.round(reached(all,9)/reached(all,8)*100):null;
+  const kpis=[
+    ["在招 HC",openHC,"sT",null],
+    ["招聘周期(天)",avgCyc===null?"—":avgCyc,"sT",null],
+    ["面试到场率",showRate===null?"—":showRate+"%",showRate!==null&&showRate<S.cfg.show?"sC":"sA","阈值 ≥"+S.cfg.show+"%"],
+    ["offer接受率",accRate===null?"—":accRate+"%",accRate!==null&&accRate<S.cfg.acc?"sC":"sA","阈值 ≥"+S.cfg.acc+"%"],
+    ["到岗率",joinRate===null?"—":joinRate+"%",joinRate!==null&&joinRate<S.cfg.join?"sC":"sA","阈值 ≥"+S.cfg.join+"%"],
+    ["人效(人均入职)",Math.round(S.cands.filter(c=>c.stage==="已入职").length/OWNERS.length*10)/10,"sP","按负责人平均"]
+  ];
+  document.getElementById("kpiStats").innerHTML=kpis.map(k=>
+    `<div class="stat ${k[2]}"><b>${k[1]}</b><span>${k[0]}${k[3]?" · "+k[3]:""}</span></div>`).join("");
+
+  // 预警
+  const warns=[];
+  if(showRate!==null&&showRate<S.cfg.show)warns.push(`⚠ 面试到场率 ${showRate}% 低于阈值 ${S.cfg.show}%，建议加强面试前提醒与确认`);
+  if(accRate!==null&&accRate<S.cfg.acc)warns.push(`⚠ offer接受率 ${accRate}% 低于阈值 ${S.cfg.acc}%，建议复盘薪资竞争力与流程时长`);
+  if(joinRate!==null&&joinRate<S.cfg.join)warns.push(`⚠ 到岗率 ${joinRate}% 低于阈值 ${S.cfg.join}%，建议入职前保温跟进`);
+  document.getElementById("kpiAlert").innerHTML=warns.length?warns.map(w=>`<div class="warn">${w}</div>`).join(""):"<div class='ok-msg show'>✅ 各项指标均在阈值范围内</div>";
+
+  const jobRow=j=>{
+    const jl=all.filter(c=>c.job===j.name);
+    const sr=reached(jl,3)?Math.round(reached(jl,4)/reached(jl,3)*100)+"%":"—";
+    const ar=reached(jl,7)?Math.round(reached(jl,8)/reached(jl,7)*100)+"%":"—";
+    return `<tr><td><b>${j.name}</b></td><td>${j.hc}</td><td>${j.hired}</td><td>${Math.max(0,j.hc-j.hired)}</td><td>${reached(jl,0)}</td><td>${reached(jl,4)}</td><td>${reached(jl,7)}</td><td>${reached(jl,8)}</td><td>${reached(jl,9)}</td><td>到场 ${sr} / 接受 ${ar}</td></tr>`;
+  };
+  document.getElementById("kpiJobs").innerHTML=`<table><tr><th>岗位</th><th>HC</th><th>入职</th><th>缺口</th><th>投递</th><th>面试</th><th>发offer</th><th>接受</th><th>入职</th><th>关键转化</th></tr>${S.jobs.map(jobRow).join("")}</table>`;
+
+  const ownRow=o=>{
+    const ol=all.filter(c=>c.owner===o);
+    const act=ol.filter(c=>c.status==="active").length;
+    const hd=ol.filter(c=>c.stage==="已入职").length;
+    const load=act+hd;
+    return `<tr><td><b>${o}</b></td><td>${ol.length}</td><td>${act}</td><td>${hd}</td><td>${S.jobs.filter(j=>j.owner===o).reduce((a,j)=>a+Math.max(0,j.hc-j.hired),0)} HC在招</td></tr>`;
+  };
+  document.getElementById("kpiOwners").innerHTML=`<table><tr><th>负责人</th><th>累计候选</th><th>流程中</th><th>已入职</th><th>负荷</th></tr>${OWNERS.map(ownRow).join("")}</table>`;
+}
+
+/* ================= 面板4：流程自动化 ================= */
+function renderPipe(){
+  const board=document.getElementById("pipeBoard");
+  if(S.role==="exec"){
+    const counts=STAGES.map(s=>S.cands.filter(c=>c.stage===s&&c.status==="active").length);
+    board.innerHTML="<div class='warn'>管理层视角：仅展示聚合数量，候选人明细已脱敏隐藏。</div><div class='chips'>"+STAGES.map((s,i)=>`<span class='chip'>${s} <b>${counts[i]}</b></span>`).join("")+"</div>";
+  }else{
+    const list=visible(S.cands).filter(c=>c.status==="active");
+    const cols=[0,1,2,3,4,5,6,7,8,9];
+    board.innerHTML="<div class='pipe-grid'>"+cols.map(i=>{
+      const cl=list.filter(c=>c.stage===STAGES[i]);
+      const chips=cl.map(c=>{
+        const d=dwellOf(c),limit=(S.cfg.dwell.split(",")[+i]||3)*1;
+        const cls=d>=limit?(d>=limit*2?"hot":"warm"):"";
+        return `<span class="chip ${cls}">${maskName(c.name)} ${d}天
+          <button title="推进到下一环节" onclick="advance('${c.id}')">→</button>
+          <button title="终止流程" onclick="askTerminate('${c.id}')">×</button></span>`;
+      }).join("");
+      return `<div class="pipe-col"><h5>${STAGES[i]}<b>${cl.length}</b></h5>${chips||"<span class='muted'>—</span>"}</div>`;
+    }).join("")+"</div>";
+  }
+  renderAlerts();renderReviews();
+}
+function advance(id){
+  const c=S.cands.find(x=>x.id===id);if(!c)return;
+  const i=STAGES.indexOf(c.stage);
+  if(i<0||i>=STAGES.length-1){alert("该候选人已处于最终环节");return;}
+  const to=STAGES[i+1];
+  if(!confirm(`将「${maskName(c.name)}」从 ${c.stage} 推进到 ${to}？`))return;
+  c.history.push({t:now(),from:c.stage,to,by:S.role});
+  c.stage=to;
+  log("人工推进节点",`${maskName(c.name)}：${STAGES[i]} → ${to}`);
+  save();renderAll();
+}
+function askTerminate(id){
+  const c=S.cands.find(x=>x.id===id);if(!c)return;
+  const r=prompt(`终止「${maskName(c.name)}」的流程，请选择/填写状态：\n${DEAD.join(" / ")}（可补充原因，如：拒offer-薪资原因）`,S.role==="exec"?"淘汰":"淘汰");
+  if(!r)return;
+  const st=DEAD.find(d=>r.startsWith(d))||"淘汰";
+  c.status=st;c.stage=c.stage;c.deadStage=c.stage;c.note=(c.note?c.note+"；":"")+r;
+  c.history.push({t:now(),from:c.stage,to:c.stage+"("+st+")",by:S.role});
+  log("人工终止流程",`${maskName(c.name)} → ${st}（${r}）`);
+  save();renderAll();
+}
+function runRules(manual){
+  S.alerts=[]; // 重新扫描
+  const limits=S.cfg.dwell.split(",").map(Number);
+  STAGES.forEach((st,i)=>{
+    const lim=limits[i]||3;
+    S.cands.filter(c=>c.status==="active"&&c.stage===st&&dwellOf(c)>=lim).forEach(c=>{
+      const rule=S.rules.find(r=>r.on&&r.stage===st);
+      if(rule){
+        if(rule.action==="催办提醒")S.alerts.push({id:c.id,rule:rule.name,msg:`${st} 停留 ${dwellOf(c)} 天（阈值 ${lim}）→ 催办：${maskName(c.name)} / ${rule.name}`,lv:"提醒"});
+        else if(rule.action==="标记预警")S.alerts.push({id:c.id,rule:rule.name,msg:`${st} 停留 ${dwellOf(c)} 天 → 预警：${maskName(c.name)} / ${rule.name}`,lv:"预警"});
+        else S.alerts.push({id:c.id,rule:rule.name,msg:`${st} 停留 ${dwellOf(c)} 天 → 建议自动推进（待复核）：${maskName(c.name)} / ${rule.name}`,lv:"复核"});
+        // 自动推进/自动标记 → 生成待复核事项
+        if(rule.action==="自动推进（需复核）"){
+          const i2=STAGES.indexOf(st);
+          if(i2>=0&&i2<STAGES.length-1&&!S.reviews.some(r=>r.cid===c.id&&r.rule===rule.name))
+            S.reviews.push({cid:c.id,rule:rule.name,from:st,to:STAGES[i2+1],t:Date.now()});
+        }
+      }else{
+        S.alerts.push({id:c.id,rule:"（未配置规则）",msg:`${st} 停留 ${dwellOf(c)} 天超时，无匹配规则`,lv:"提示"});
+      }
+    });
+  });
+  if(manual)log("执行规则引擎",`扫描完成：${S.alerts.length} 条提醒/预警`);
+  save();renderAll();
+  if(manual)alert(`规则执行完成：共 ${S.alerts.length} 条提醒/预警，${S.reviews.length} 条待复核。`);
+}
+function renderAlerts(){
+  const box=document.getElementById("alertList");
+  if(!S.alerts.length){box.innerHTML="<span class='muted'>暂无提醒。点击「执行自动化规则」扫描超时节点。</span>";return;}
+  box.innerHTML=S.alerts.map((a,i)=>{
+    const bc=a.lv==="预警"?"warn":(a.lv==="复核"?"purple":"info");
+    return `<div class="conn"><span><span class="badge ${bc}">${a.lv}</span> ${a.msg}</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeAlert(${i})">已处理</button></div>`;
+  }).join("");
+}
+function closeAlert(i){
+  log("处理提醒预警",S.alerts[i].msg);S.alerts.splice(i,1);save();renderAlerts();
+}
+function renderReviews(){
+  const box=document.getElementById("reviewList");
+  if(!S.reviews.length){box.innerHTML="<span class='muted'>暂无待复核事项（自动推进/自动标记类动作会汇集到这里等待人工确认）。</span>";return;}
+  box.innerHTML=S.reviews.map((r,i)=>{
+    const c=S.cands.find(x=>x.id===r.cid);
+    return `<div class="conn"><span><span class="badge purple">${r.rule}</span> ${c?maskName(c.name):"?"}：${r.from} → <b>${r.to}</b><br><span class="muted">${fmtT(r.t)} 由规则生成</span></span>
+      <span><button class="btn btn-primary btn-sm" onclick="confirmReview(${i})">确认执行</button>
+      <button class="btn btn-danger btn-sm" onclick="rejectReview(${i})">忽略</button></span></div>`;
+  }).join("");
+}
+function confirmReview(i){
+  const r=S.reviews[i];const c=S.cands.find(x=>x.id===r.cid);if(!c){S.reviews.splice(i,1);save();renderReviews();return;}
+  c.history.push({t:now(),from:r.from,to:r.to,by:S.role+"(复核通过)"});c.stage=r.to;
+  log("复核通过·自动推进",`${maskName(c.name)}：${r.from} → ${r.to}（${r.rule}）`);
+  S.reviews.splice(i,1);save();renderAll();
+}
+function rejectReview(i){
+  const r=S.reviews[i];const c=S.cands.find(x=>x.id===r.cid);
+  log("复核驳回",`${c?maskName(c.name):"?"}：${r.from} 保持不变（${r.rule}）`);
+  S.reviews.splice(i,1);save();renderReviews();
+}
+
+/* ================= 面板5：异常瓶颈 ================= */
+function renderAnomaly(){
+  const limits=S.cfg.dwell.split(",").map(Number);
+  const rows=STAGES.map((st,i)=>{
+    const arr=S.cands.filter(c=>c.history.some(h=>h.to===st));
+    const dw=arr.map(c=>{ // 该环节停留时长
+      const ent=stageEnterT(c,st);
+      if(ent===null)return null;
+      const nxt=i<STAGES.length-1?stageEnterT(c,STAGES[i+1]):null;
+      const ev=nxt!==null?(nxt<9e11?now()+nxt*DAY:nxt):(ent<9e11?now()+ent*DAY:ent);
+      const sv=ent<9e11?now()+ent*DAY:ent;
+      return Math.max(1,Math.round((ev-sv)/DAY));
+    }).filter(v=>v!==null);
+    const avg=dw.length?Math.round(dw.reduce((a,b)=>a+b,0)/dw.length*10)/10:"—";
+    const lim=limits[i]||3;
+    const over=dw.filter(v=>v>=lim).length;
+    return `<tr><td><b>${st}</b></td><td>${dw.length}</td><td style="color:${avg!=="—"&&avg>lim?"var(--red)":"inherit"};font-weight:bold;">${avg}</td><td>${lim}</td><td>${over}</td>
+      <td>${avg!=="—"&&avg>lim?"<span class='badge warn'>瓶颈</span>":"<span class='badge ok'>正常</span>"}</td></tr>`;
+  }).join("");
+  document.getElementById("dwellBox").innerHTML=`<table><tr><th>环节</th><th>经过人数</th><th>平均停留(天)</th><th>口径阈值(天)</th><th>超时人次</th><th>判定</th></tr>${rows}</table>`;
+
+  // 流失构成
+  const tally={};
+  DEAD.forEach(d=>{tally[d]=S.cands.filter(c=>c.status===d).length;});
+  const offerLost={};
+  S.cands.filter(c=>c.status==="拒offer").forEach(c=>{
+    const key=(c.note||"未知原因").replace(/^.*offer流失[-－]?/,"");
+    offerLost[key]=(offerLost[key]||0)+1;
+  });
+  const maxT=Math.max(1,...Object.values(tally),...Object.values(offerLost));
+  document.getElementById("dropBox").innerHTML=
+    Object.entries(tally).map(([k,v])=>`<div class="funnel-row"><div class="funnel-label" style="width:70px;">${k}</div>
+      <div class="funnel-bar" style="width:${Math.max(8,v/maxT*280)}px;background:var(--red);">${v}</div></div>`).join("")
+    +"<div class='hr'></div><b style='font-size:12.5px;'>offer流失原因构成</b>"+
+    (Object.keys(offerLost).length?Object.entries(offerLost).map(([k,v])=>`<div class="funnel-row"><div class="funnel-label" style="width:70px;font-size:11.5px;">${k}</div>
+      <div class="funnel-bar" style="width:${Math.max(8,v/maxT*280)}px;background:var(--amber);">${v}</div></div>`).join(""):"<span class='muted'>暂无</span>");
+
+  // 招聘官负荷
+  const maxL=Math.max(1,...OWNERS.map(o=>S.cands.filter(c=>c.owner===o&&c.status==="active").length));
+  document.getElementById("loadBox").innerHTML=OWNERS.map(o=>{
+    const act=S.cands.filter(c=>c.owner===o&&c.status==="active").length;
+    const acts=S.logs.filter(l=>l.action.includes("推进")||l.action.includes("录入")).length;
+    return `<div class="funnel-row"><div class="funnel-label" style="width:70px;">${o}</div>
+      <div class="funnel-bar" style="width:${Math.max(8,act/maxL*280)}px;background:var(--primary);">${act} 在办</div></div>`;
+  }).join("")+`<div class="footnote">在办候选人数均衡性直接影响环节停留时长；若某一负责人在办量显著偏高且其候选人超时多，建议重新分配。</div>`;
+}
+
+/* ================= 面板6：报表复盘 ================= */
+function genReport(kind){
+  const d=new Date();
+  const all=S.cands;
+  const reached=(arr,i)=>reachedCount(arr,i);
+  const hired=all.filter(c=>c.stage==="已入职").length;
+  const openHC=S.jobs.reduce((a,j)=>a+Math.max(0,j.hc-j.hired),0);
+  const showRate=reached(all,3)?Math.round(reached(all,4)/reached(all,3)*100):"—";
+  const accRate=reached(all,7)?Math.round(reached(all,8)/reached(all,7)*100):"—";
+  const joinRate=reached(all,8)?Math.round(reached(all,9)/reached(all,8)*100):"—";
+  const L=[];
+  L.push(`【招聘${kind}报】${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日　汇报对象：${S.cfg.reportTo}`);
+  L.push("");
+  L.push("一、关键指标");
+  L.push(`  在招HC：${openHC}｜累计候选人：${all.length}｜已入职：${hired}`);
+  L.push(`  面试到场率：${showRate}%（阈值${S.cfg.show}%）｜offer接受率：${accRate}%（阈值${S.cfg.acc}%）｜到岗率：${joinRate}%（阈值${S.cfg.join}%）`);
+  L.push("");
+  L.push("二、招聘漏斗");
+  for(let i=0;i<STAGES.length;i++){
+    const n=reached(all,i);
+    const drop=i===0?0:Math.max(0,reached(all,i-1)-n);
+    L.push(`  ${STAGES[i]}：${n} 人${i>0?`（流失 ${drop}）`:""}`);
+  }
+  L.push("");
+  L.push("三、岗位进度");
+  S.jobs.forEach(j=>{
+    const jl=all.filter(c=>c.job===j.name);
+    L.push(`  ${j.name}：HC ${j.hc}，已入职 ${j.hired}，缺口 ${Math.max(0,j.hc-j.hired)}，流程中 ${jl.filter(c=>c.status==="active").length} 人`);
+  });
+  L.push("");
+  L.push("四、异常与瓶颈");
+  const limits=S.cfg.dwell.split(",").map(Number);
+  STAGES.forEach((st,i)=>{
+    const over=all.filter(c=>c.status==="active"&&c.stage===st&&dwellOf(c)>=(limits[i]||3)).length;
+    if(over>0)L.push(`  ⚠ ${st}：${over} 人超时停留（阈值${limits[i]||3}天），建议催办`);
+  });
+  const noffer=all.filter(c=>c.status==="拒offer").length;
+  if(noffer)L.push(`  ⚠ offer流失 ${noffer} 人，原因见异常分析页`);
+  const nnoshow=all.filter(c=>c.status==="爽约").length;
+  if(nnoshow)L.push(`  ⚠ 面试爽约 ${nnoshow} 人，建议上线面试前 24h/2h 双提醒`);
+  L.push("");
+  L.push("五、下周待办");
+  S.reviews.length&&L.push(`  1. 处理 ${S.reviews.length} 条待复核的自动流转事项`);
+  S.alerts.length&&L.push(`  2. 处理 ${S.alerts.length} 条节点提醒/预警`);
+  L.push(`  ${S.reviews.length||S.alerts.length?3:1}. 复盘${showRate!=="—"&&showRate<S.cfg.show?"面试到场率提升动作":""}缺口最大岗位的渠道投放`);
+  document.getElementById("reportArea").value=L.join("\n");
+  log(`生成${kind}报`,"自动汇总生成");save();
+}
+function copyReport(){
+  const ta=document.getElementById("reportArea");
+  if(!ta.value){alert("请先生成报告");return;}
+  ta.select();document.execCommand("copy");alert("已复制到剪贴板");
+}
+function renderTrack(){
+  document.getElementById("jobTrack").innerHTML=`<table><tr><th>岗位</th><th>部门</th><th>负责人</th><th>HC</th><th>已入职</th><th>offer中</th><th>面试中</th><th>编制进度</th></tr>`+
+    S.jobs.map(j=>{
+      const jl=S.cands.filter(c=>c.job===j.name);
+      const off=jl.filter(c=>["offer待发","offer已发","offer接受"].includes(c.stage)).length;
+      const itv=jl.filter(c=>["待约面试","已约面试","面试完成","待反馈"].includes(c.stage)).length;
+      const pct=Math.min(100,Math.round(j.hired/Math.max(j.hc,1)*100));
+      return `<tr><td><b>${j.name}</b></td><td>${j.dept}</td><td>${j.owner}</td><td>${j.hc}</td><td>${j.hired}</td><td>${off}</td><td>${itv}</td>
+        <td><div style="background:#eef1f5;border-radius:4px;height:10px;width:130px;display:inline-block;vertical-align:middle;"><div style="background:var(--green);height:10px;border-radius:4px;width:${pct}%;"></div></div> ${pct}%</td></tr>`;
+    }).join("")+"</table>";
+}
+function download(fname,content,type){
+  const blob=new Blob([content],{type});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;a.click();
+}
+function exportCSV(){
+  const rows=[["姓名","电话","岗位","部门","当前环节","停留天数","状态","分级","来源","负责人","备注/流失原因"]];
+  visible(S.cands).forEach(c=>rows.push([maskName(c.name),maskPhone(c.phone),c.job,c.dept,c.stage,dwellOf(c),c.status,c.rating||"未分级",c.source,c.owner,c.note||""]));
+  const csv="\ufeff"+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  download("候选人状态清单_"+new Date().toISOString().slice(0,10)+".csv",csv,"text/csv");
+  log("导出状态清单",`${rows.length-1} 条（角色：${S.role}，脱敏：${S.mask?"开":"关"}）`);save();
+}
+function exportAll(){download("招聘数据备份_"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(S,null,2),"application/json");}
+function restoreAll(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{S=JSON.parse(r.result);save();renderAll();alert("恢复成功");}catch(err){alert("文件格式错误");}};
+  r.readAsText(f,"utf-8");
+}
+
+/* ================= 面板7：落地配套 ================= */
+function renderDefs(){
+  document.getElementById("defStages").value=S.defs.stages;
+  document.getElementById("defMetrics").value=S.defs.metrics;
+}
+function saveDefs(){
+  S.defs.stages=document.getElementById("defStages").value;
+  S.defs.metrics=document.getElementById("defMetrics").value;
+  log("修改数据口径","环节/指标定义更新");save();alert("口径定义已保存并留痕");
+}
+function renderRules(){
+  const stOpts=STAGES.map(s=>`<option ${document.getElementById("rStage").value===s?"selected":""}>${s}</option>`).join("");
+  document.getElementById("ruleList").innerHTML=S.rules.map((r,i)=>
+    `<div class="conn"><span><span class="badge ${r.on?"ok":"dead"}">${r.on?"启用":"停用"}</span> <b>${r.name}</b>　监控「${r.stage}」超 ${r.days} 天 → ${r.action}</span>
+      <span><button class="btn btn-ghost btn-sm" onclick="toggleRule(${i})">${r.on?"停用":"启用"}</button>
+      <button class="btn btn-danger btn-sm" onclick="delRule(${i})">删除</button></span></div>`).join("");
+  document.getElementById("rStage").innerHTML=stOpts;
+}
+function toggleRule(i){S.rules[i].on=!S.rules[i].on;log("规则启停",`${S.rules[i].name} → ${S.rules[i].on?"启用":"停用"}`);save();renderRules();}
+function delRule(i){if(!confirm("删除规则「"+S.rules[i].name+"」？"))return;log("删除规则",S.rules[i].name);S.rules.splice(i,1);save();renderRules();}
+function addRule(){
+  const name=document.getElementById("rName").value.trim();
+  if(!name){alert("请填写规则名称");return;}
+  S.rules.push({id:"r"+(S.seq++),name,stage:document.getElementById("rStage").value,days:+document.getElementById("rDays").value||2,
+    action:document.getElementById("rAction").value,on:true});
+  log("新增规则",name);save();
+  document.getElementById("rName").value="";renderRules();
+}
+function renderLogs(){
+  document.getElementById("logBox").innerHTML=S.logs.length?
+    `<table><tr><th>时间</th><th>角色</th><th>操作</th><th>详情</th></tr>`+
+    S.logs.map(l=>`<tr><td style="white-space:nowrap;">${fmtT(l.t)}</td><td>${l.role}</td><td>${l.action}</td><td>${l.detail}</td></tr>`).join("")+"</table>"
+    :"<span class='muted'>暂无操作记录。</span>";
+}
+
+/* ================= 总渲染 ================= */
+function renderAll(){
+  refreshSelects();
+  renderFunnel();renderKPI();renderPipe();renderAnomaly();renderTrack();renderRules();renderLogs();
+  document.getElementById("cfgCycle").value=S.cfg.cycle;document.getElementById("cfgFunnel").value=S.cfg.funnel;
+  document.getElementById("cfgShow").value=S.cfg.show;document.getElementById("cfgAcc").value=S.cfg.acc;document.getElementById("cfgJoin").value=S.cfg.join;
+  document.getElementById("cfgRefresh").value=S.cfg.refresh;document.getElementById("cfgReportTo").value=S.cfg.reportTo;
+  document.getElementById("cfgDwell").value=S.cfg.dwell;
+}
+load();
+document.getElementById("roleSel").value=S.role;
+document.getElementById("maskChk").checked=S.mask;
+renderConns();
+renderAll();
+runRules(false);
+</script>
+</body>
+</html>
