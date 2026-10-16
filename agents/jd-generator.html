@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JD 生成智能体 · 通用版</title>
+<style>
+:root{
+  --primary:#1d6b4f; --primary-dark:#0f3d2e; --primary-mid:#2f9e6e;
+  --accent:#c9a227; --accent-soft:#e6cf86;
+  --bg:#f5f8f5; --card:#ffffff; --line:#d9e6df;
+  --text:#1c2a24; --muted:#5e7068;
+  --ok:#1e8e5a; --warn:#c77700; --danger:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.65}
+
+/* ===== 高级绿封面 ===== */
+header.cover{position:relative;overflow:hidden;color:#fff;padding:38px 40px;
+  background:
+    radial-gradient(900px 380px at 88% -40%, rgba(111,206,159,.35), transparent 60%),
+    radial-gradient(700px 320px at -10% 140%, rgba(201,162,39,.18), transparent 55%),
+    linear-gradient(135deg,var(--primary-dark) 0%, var(--primary) 55%, var(--primary-mid) 100%);
+  box-shadow:0 6px 24px rgba(15,61,46,.22)}
+header.cover::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 20% 30%, rgba(255,255,255,.06) 0 2px, transparent 3px) 0 0/26px 26px;
+  opacity:.5;pointer-events:none}
+header.cover .deco{position:absolute;right:-30px;top:-30px;width:320px;height:320px;opacity:.16;pointer-events:none}
+header.cover .cover-inner{position:relative;z-index:2;display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+header.cover .badge{flex:none;width:78px;height:78px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));
+  border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(4px);
+  box-shadow:inset 0 1px 6px rgba(255,255,255,.3), 0 6px 18px rgba(0,0,0,.18)}
+header.cover .badge .jd{font-size:30px;font-weight:800;letter-spacing:1px;line-height:1}
+header.cover .badge .ai{font-size:10px;letter-spacing:2px;color:var(--accent-soft);margin-top:5px}
+header.cover .eyebrow{font-size:11.5px;letter-spacing:3px;color:var(--accent-soft);font-weight:600;margin-bottom:6px}
+header.cover h1{font-size:27px;letter-spacing:2px;font-weight:800;display:flex;align-items:baseline;gap:10px}
+header.cover h1 .ver{font-size:13px;font-weight:500;letter-spacing:1px;color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.4);padding:1px 10px;border-radius:20px}
+header.cover p{margin-top:8px;opacity:.9;font-size:13.5px;max-width:640px}
+header.cover .tagline{margin-left:auto;align-self:flex-start;font-size:12px;color:#fff;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:30px;padding:7px 16px;white-space:nowrap}
+main{max-width:1440px;margin:0 auto;padding:20px 24px 60px}
+/* 三层流程导航 */
+.flow{display:flex;align-items:stretch;gap:0;margin:0 0 22px;flex-wrap:wrap}
+.flow .step{flex:1;min-width:230px;display:flex;align-items:center;gap:13px;background:var(--card);
+  border:1px solid var(--line);border-radius:13px;padding:15px 18px;box-shadow:0 1px 6px rgba(15,61,46,.05)}
+.flow .step+.step{margin-left:14px}
+.flow .step .sno{flex:none;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;color:#fff;font-size:16px;background:linear-gradient(145deg,var(--primary-mid),var(--primary));box-shadow:0 3px 9px rgba(29,107,79,.32)}
+.flow .step:nth-child(2) .sno{background:linear-gradient(145deg,#3aa978,#1d6b4f)}
+.flow .step:nth-child(3) .sno{background:linear-gradient(145deg,#1d6b4f,#0f3d2e)}
+.flow .step .stxt b{display:block;font-size:14.5px;color:var(--primary-dark)}
+.flow .step .stxt span{font-size:12px;color:var(--muted)}
+.flow .step .arrow{margin-left:auto;padding-left:14px;color:var(--accent);font-size:20px;font-weight:700}
+.flow .step:last-child .arrow{display:none}
+@media (max-width:860px){.flow .step{margin-left:0!important;margin-bottom:10px}.flow .step .arrow{display:none}}
+.layout{display:grid;grid-template-columns:minmax(420px,46%) 1fr;gap:20px;align-items:start}
+@media (max-width:1100px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:0 2px 12px rgba(15,61,46,.07);overflow:hidden}
+.panel>.hd{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;
+  background:linear-gradient(135deg,#f1f8f3,#e4f0ea)}
+.panel>.hd .no-badge{flex:none;width:27px;height:27px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;color:#fff;font-size:13px;background:linear-gradient(145deg,var(--primary-mid),var(--primary));box-shadow:0 2px 6px rgba(29,107,79,.3)}
+.panel>.hd h2{font-size:16.5px;color:var(--primary-dark);font-weight:800}
+.panel>.hd .sub{font-size:12px;color:var(--muted);margin-left:2px}
+.panel>.bd{padding:16px 18px}
+.sec{margin-bottom:16px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;transition:box-shadow .15s}
+.sec:hover{box-shadow:0 2px 10px rgba(15,61,46,.06)}
+.sec>.sec-hd{background:#eef5f1;border-left:3px solid var(--primary);padding:10px 14px;font-weight:700;font-size:13.5px;color:var(--primary-dark);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.sec>.sec-hd .no{background:var(--primary);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex:none}
+.sec>.sec-hd .req{color:var(--danger);font-size:12px;font-weight:400}
+.sec>.sec-hd .arrow{margin-left:auto;color:var(--muted);transition:transform .2s}
+.sec.closed>.sec-hd .arrow{transform:rotate(-90deg)}
+.sec.closed>.sec-bd{display:none}
+.sec>.sec-bd{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.sec>.sec-bd .full{grid-column:1/-1}
+.fld label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
+.fld label b{color:var(--danger)}
+input[type=text],select,textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13px;font-family:inherit;background:#fff;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(29,107,79,.14)}
+textarea{resize:vertical;min-height:56px}
+.hint{font-size:11.5px;color:#8a97a8;margin-top:2px}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+button{border:none;border-radius:7px;padding:10px 20px;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff;font-weight:700}
+.btn-primary:hover{background:#d3661f}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-mini{padding:4px 12px;font-size:12px;border-radius:5px}
+/* 输出区 */
+.tabs{display:flex;gap:5px;padding:13px 16px 0;background:#f4f8f6;flex-wrap:wrap;border-bottom:2px solid var(--line)}
+.tabs .tab{padding:9px 16px;font-size:13.5px;cursor:pointer;color:var(--muted);border-radius:9px 9px 0 0;
+  border:1px solid transparent;border-bottom:none;transition:all .15s}
+.tabs .tab:hover{color:var(--primary)}
+.tabs .tab.on{color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-mid));
+  font-weight:700;box-shadow:0 3px 9px rgba(29,107,79,.25)}
+.tab-body{padding:16px 18px;display:none}
+.tab-body.on{display:block}
+.subtabs{display:flex;gap:6px;margin-bottom:12px}
+.subtabs .st{padding:5px 14px;border-radius:14px;font-size:12.5px;background:#e7f1ec;color:var(--muted);cursor:pointer;transition:all .15s}
+.subtabs .st.on{background:linear-gradient(135deg,var(--primary),var(--primary-mid));color:#fff;box-shadow:0 2px 7px rgba(29,107,79,.22)}
+.doc{border:1px solid var(--line);border-radius:8px;padding:18px 22px;background:#fff;white-space:pre-wrap;font-size:13.5px;line-height:1.9}
+.doc h3{color:var(--primary-dark)}
+.tbd{color:var(--accent);font-weight:700}
+.doc-meta{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-bottom:8px;flex-wrap:wrap}
+.review-banner{background:#fff7ec;border:1px solid #f5d9ae;color:#8a5a00;border-radius:6px;padding:8px 12px;font-size:12.5px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#eef5f1;color:var(--primary-dark);font-size:12.5px}
+.pill{display:inline-block;border-radius:10px;padding:0 9px;font-size:11.5px;color:#fff}
+.pill.high{background:var(--danger)}.pill.mid{background:var(--warn)}.pill.low{background:#7f94ad}
+.pill.ok{background:var(--ok)}
+.empty-tip{color:#8a97a8;text-align:center;padding:40px 0;font-size:13.5px}
+.risk-ok{color:var(--ok);font-weight:700}
+/* 落地配套 */
+.support{margin-top:24px}
+.support-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.support-item{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px 18px;box-shadow:0 1px 6px rgba(15,61,46,.05);transition:box-shadow .15s,transform .15s}
+.support-item:hover{box-shadow:0 4px 16px rgba(15,61,46,.1);transform:translateY(-1px)}
+.support-item h3{font-size:14.5px;color:var(--primary-dark);margin-bottom:10px;display:flex;align-items:center;gap:9px;font-weight:800}
+.support-item h3 .ic{flex:none;width:25px;height:25px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#fff;background:linear-gradient(145deg,var(--primary-mid),var(--primary));box-shadow:0 2px 6px rgba(29,107,79,.25)}
+.tpl-item{border:1px solid var(--line);border-radius:7px;padding:9px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.tpl-item .nm{font-weight:700;font-size:13px}
+.tpl-item .ds{font-size:11.5px;color:var(--muted);flex:1}
+.tpl-item button{margin-left:auto}
+.log-tbl td,.log-tbl th{font-size:12px;padding:5px 8px}
+.toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%);background:var(--primary-dark);color:#fff;padding:10px 26px;border-radius:8px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header class="cover">
+  <svg class="deco" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M120 20C70 35 30 80 40 130c60-10 100-55 80-110z" fill="#fff"/>
+    <path d="M60 70C30 100 25 150 55 180c20-45 25-95-5-110z" fill="#fff" opacity=".6"/>
+    <circle cx="150" cy="150" r="34" stroke="#fff" stroke-width="2" opacity=".7"/>
+  </svg>
+  <div class="cover-inner">
+    <div class="badge"><span class="jd">JD</span><span class="ai">AI AGENT</span></div>
+    <div>
+      <div class="eyebrow">RECRUITMENT · JD GENERATOR</div>
+      <h1>智能 JD 生成体 <span class="ver">通用版</span></h1>
+      <p>输入层采集清单 · 输出层多版本交付物（结构化JD / 合规风控 / 配套附件 / 可发布纯文本）· 落地配套（模板库 / 人工复核 / 日志留痕 / 记忆优化）</p>
+    </div>
+    <div class="tagline">⚡ 0 样本也能出稿 · 合规初筛内置</div>
+  </div>
+</header>
+
+<main>
+<div class="flow">
+  <div class="step"><span class="sno">1</span><div class="stxt"><b>输入层 · 采集清单</b><span>信息越全，产出越准</span></div><span class="arrow">→</span></div>
+  <div class="step"><span class="sno">2</span><div class="stxt"><b>输出层 · 交付物</b><span>多版本JD / 合规 / 附件</span></div><span class="arrow">→</span></div>
+  <div class="step"><span class="sno">3</span><div class="stxt"><b>落地配套 · 产品与实施</b><span>模板库 / 复核 / 留痕</span></div></div>
+</div>
+<div class="layout">
+  <!-- ============ 输入层 ============ -->
+  <div class="panel">
+    <div class="hd"><span class="no-badge">1</span><h2>输入层 · 采集清单</h2><span class="sub">信息越全，产出越准</span></div>
+    <div class="bd">
+      <div class="sec" id="sec1">
+        <div class="sec-hd" onclick="toggleSec(this)"><span class="no">01</span>基础岗位信息<span class="req">（必填：职位名称/地点）</span><span class="arrow">▾</span></div>
+        <div class="sec-bd">
+          <div class="fld"><label>职位名称 <b>*</b></label><input type="text" id="f_title" placeholder="例：市场销售代表"></div>
+          <div class="fld"><label>所属部门</label><input type="text" id="f_dept" placeholder="例：销售部"></div>
+          <div class="fld"><label>汇报对象（汇报线）</label><input type="text" id="f_report" placeholder="例：销售总监"></div>
+          <div class="fld"><label>工作地点 <b>*</b></label><input type="text" id="f_loc" placeholder="例：XX市（需出差）"></div>
+          <div class="fld"><label>用工性质</label>
+            <select id="f_type"><option value="">【待补充】</option><option>全职</option><option>兼职</option><option>实习</option><option>劳务外包</option><option>其他</option></select></div>
+          <div class="fld"><label>招聘人数</label><input type="text" id="f_hc" placeholder="例：3人"></div>
+          <div class="fld"><label>HC 紧急度</label>
+            <select id="f_urgency"><option value="">【待补充】</option><option>常规</option><option>紧急（2周内到岗）</option><option>急招（1周内到岗）</option><option>长期储备</option></select></div>
+          <div class="fld"><label>薪资区间（税前/税后、固浮比、年终奖等）</label><input type="text" id="f_salary" placeholder="例：6-9K，固浮比7:3，年终奖1个月"></div>
+          <div class="fld full"><label>工作经验 / 学历等硬性概况（可留空，在任职资格中详填）</label><input type="text" id="f_expbrief" placeholder="例：1-3年快消/农资行业经验，大专及以上"></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-hd" onclick="toggleSec(this)" id="sec2h"><span class="no">02</span>业务与岗位使命<span class="arrow">▾</span></div>
+        <div class="sec-bd">
+          <div class="fld full"><label>要解决的业务问题</label><textarea id="f_problem" placeholder="例：区域市场空白，需要快速铺开终端网点"></textarea></div>
+          <div class="fld full"><label>核心交付结果（这个岗位做成什么样算成功）</label><textarea id="f_deliver" placeholder="例：3个月内完成XX县60家农资店建档与首单"></textarea></div>
+          <div class="fld"><label>业务阶段</label>
+            <select id="f_stage"><option value="">【待补充】</option><option>初创/从0到1</option><option>成长</option><option>扩张/规模复制</option><option>维稳/成熟</option></select></div>
+          <div class="fld"><label>团队规模</label><input type="text" id="f_team" placeholder="例：销售团队8人"></div>
+          <div class="fld"><label>上下游协作</label><input type="text" id="f_coop" placeholder="例：向上对接产品部，横向支持客服"></div>
+          <div class="fld full"><label>成功衡量指标（KPI/OKR）</label><textarea id="f_kpi" placeholder="例：新开网点数≥15/月，回款率≥95%"></textarea></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-hd" onclick="toggleSec(this)"><span class="no">03</span>岗位职责<span class="arrow">▾</span></div>
+        <div class="sec-bd">
+          <div class="fld full"><label>核心工作事项与权责边界（一行一条；标注「负责」还是「协同」；动词开头，结果导向；建议 8-10 条）</label>
+            <textarea id="f_duties" style="min-height:120px" placeholder="负责 —— 开拓区域农资终端网点，每月新开合作店≥15家
+协同 —— 配合产品部完成新品到店陈列
+负责 —— …"></textarea>
+            <div class="hint">填写时可在行首用「负责 / 协同 / 主导 / 参与」标注权责边界，生成时自动归类。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-hd" onclick="toggleSec(this)"><span class="no">04</span>任职资格（分层）<span class="arrow">▾</span></div>
+        <div class="sec-bd">
+          <div class="fld full"><label>① 硬性门槛（学历 / 年限 / 证书 / 专业等，一票否决项）</label>
+            <textarea id="f_hard" placeholder="大专及以上学历，专业不限
+1年以上快消/农资/日化销售经验
+持C1驾照，能适应长期出差"></textarea></div>
+          <div class="fld full"><label>② 专业技能与经验加分</label>
+            <textarea id="f_skill" placeholder="熟悉农资店进销存逻辑者优先
+有县域市场铺货经验优先"></textarea></div>
+          <div class="fld full"><label>③ 软性素质</label>
+            <textarea id="f_soft" placeholder="抗压性强，能独立跑市场
+沟通表达清晰，结果导向"></textarea></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-hd" onclick="toggleSec(this)"><span class="no">05</span>卖点与输出偏好<span class="arrow">▾</span></div>
+        <div class="sec-bd">
+          <div class="fld full"><label>团队亮点 / 晋升 / 福利 / 文化（对外版核心卖点）</label>
+            <textarea id="f_selling" placeholder="提成上不封顶，销冠月入2W+
+的区域保护政策
+带教体系完善，6个月晋升路径清晰"></textarea></div>
+          <div class="fld"><label>输出用途</label>
+            <select id="f_usage"><option>对外发布 + 内控版双输出</option><option>仅对外发布</option><option>仅内部说明书</option></select></div>
+          <div class="fld"><label>语言风格</label>
+            <select id="f_style"><option>通用</option><option>国企/严谨规范</option><option>互联网/直接扁平</option><option>制造/实业稳重</option></select></div>
+          <div class="fld"><label>对外版薪资展示</label>
+            <select id="f_salaryshow"><option>展示区间</option><option>写"面议"</option><option>展示下限+</option></select></div>
+          <div class="fld"><label>对外版目标字数</label>
+            <select id="f_wordcount"><option>300-500（精简）</option><option>500-800（标准）</option><option>800+（详尽）</option></select></div>
+          <div class="fld full" style="display:flex;align-items:center;gap:8px;margin-top:2px">
+            <input type="checkbox" id="f_needstar" checked style="width:auto"> <label style="margin:0;color:var(--text)">同时生成配套附件：人才画像 + 简历筛选打分标准 + STAR 面试题库</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="generate()">⚡ 生成 JD 与交付物</button>
+        <button class="btn-ghost" onclick="loadDemo()">载入示例</button>
+        <button class="btn-ghost" onclick="saveTemplate()">存为模板</button>
+        <button class="btn-ghost" onclick="clearAll()">清空</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 输出层 ============ -->
+  <div class="panel">
+    <div class="hd"><span class="no-badge">2</span><h2>输出层 · 交付物</h2></div>
+    <div class="tabs">
+      <div class="tab on" data-tab="t1" onclick="switchTab('t1')">① 结构化JD（多版本）</div>
+      <div class="tab" data-tab="t2" onclick="switchTab('t2')">② 合规风险检测报告</div>
+      <div class="tab" data-tab="t3" onclick="switchTab('t3')">③ 配套附件（可选）</div>
+      <div class="tab" data-tab="t4" onclick="switchTab('t4')">④ 可直接发布纯文本</div>
+    </div>
+
+    <div class="tab-body on" id="t1">
+      <div class="subtabs">
+        <div class="st on" data-doc="doc_ext" onclick="switchSub(this)">对外招聘平台版</div>
+        <div class="st" data-doc="doc_boss" onclick="switchSub(this)">BOSS直聘版</div>
+        <div class="st" data-doc="doc_moment" onclick="switchSub(this)">朋友圈版</div>
+        <div class="st" data-doc="doc_int" onclick="switchSub(this)">内部岗位说明书版</div>
+        <button class="btn-ghost btn-mini" style="margin-left:auto" onclick="copyDoc()">复制当前版本</button>
+      </div>
+      <div class="review-banner">⚠ AI 初稿仅出初稿并做校验，<b>强制 HR / 业务负责人人工复核</b>后使用，不替代人工确认真实岗位需求。</div>
+      <div class="doc-meta" id="meta1"></div>
+      <div class="doc" id="doc_ext">暂无内容 —— 请先在左侧填写采集清单，点击「生成 JD 与交付物」。</div>
+      <div class="doc" id="doc_boss" style="display:none"></div>
+      <div class="doc" id="doc_moment" style="display:none"></div>
+      <div class="doc" id="doc_int" style="display:none"></div>
+    </div>
+
+    <div class="tab-body" id="t2">
+      <div id="risk_body"><div class="empty-tip">生成后自动输出合规风险检测报告。</div></div>
+    </div>
+
+    <div class="tab-body" id="t3">
+      <div id="attach_body"><div class="empty-tip">勾选「同时生成配套附件」后，此处输出人才画像、简历筛选打分标准与 STAR 面试题库。</div></div>
+    </div>
+
+    <div class="tab-body" id="t4">
+      <div class="btn-row" style="margin-bottom:10px">
+        <button class="btn-primary btn-mini" onclick="copyPlain()">📋 一键复制纯文本</button>
+        <span class="hint">可直接复制粘贴到各招聘平台的 JD 编辑框（BOSS / 智联 / 前程无忧等），未输入信息已标注【待补充】，绝不编造。</span>
+      </div>
+      <textarea id="plain_out" style="min-height:420px;font-size:13px;line-height:1.8" placeholder="生成后此处为可直接发布的纯文本…" readonly></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 落地配套 ============ -->
+<div class="panel support">
+  <div class="hd"><span class="no-badge">3</span><h2>落地配套 · 产品与实施</h2></div>
+  <div class="bd support-grid">
+    <div class="support-item">
+      <h3><span class="ic">①</span>行业岗位模板库</h3>
+      <div class="hint" style="margin-bottom:8px">同类岗位一键复用，减少重复录入。内置常用模板 + 可保存自定义模板（本地留存）。</div>
+      <div id="tpl_list"></div>
+    </div>
+    <div class="support-item">
+      <h3><span class="ic">②</span>人工复核节点</h3>
+      <div style="font-size:12.5px;color:var(--muted)">
+        · AI 只出<b>初稿</b>并做校验，每份产出均带「待复核」标识；<br>
+        · 输出末尾自动附<b>复核记录栏</b>（复核人 / 复核日期 / 结论）；<br>
+        · 不替代人工确认真实岗位需求——硬性门槛与薪资由业务负责人最终确认。
+      </div>
+    </div>
+    <div class="support-item">
+      <h3><span class="ic">③</span>企业知识库对接（预留）</h3>
+      <div style="font-size:12.5px;color:var(--muted)">
+        当前为单机通用版，职级体系 / 薪酬规范 / 内部岗位序列暂以模板形式沉淀。<br>
+        预留接口：将「内部岗位说明书版」与公司职级表对齐后，即可批量导入企业知识库，保证口径统一。
+      </div>
+    </div>
+    <div class="support-item">
+      <h3><span class="ic">④</span>日志留痕与审计</h3>
+      <div class="hint" style="margin-bottom:6px">记录输入参数、生成版本与修改记录，全程可追溯（本地保存，最近 50 条）。</div>
+      <div style="max-height:200px;overflow:auto"><table class="log-tbl" id="log_tbl"><thead><tr><th>时间</th><th>岗位</th><th>版本</th><th>风险</th></tr></thead><tbody></tbody></table></div>
+      <button class="btn-ghost btn-mini" style="margin-top:6px" onclick="clearLogs()">清空日志</button>
+    </div>
+    <div class="support-item">
+      <h3><span class="ic">⑤</span>记忆与持续优化</h3>
+      <div style="font-size:12.5px;color:var(--muted)">
+        · 保存的模板 = 岗位模板沉淀，同系列岗位复用框架；<br>
+        · 建议每季度按招聘转化率复盘：到面率低 → 修卖点；试用期流失高 → 修硬性门槛；<br>
+        · 筛选标准随招聘反馈持续迭代，沉淀进人才画像打分表。
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 工具函数 ================= */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+function toggleSec(el){el.parentNode.classList.toggle('closed');}
+function switchTab(t){document.querySelectorAll('.tabs .tab').forEach(e=>e.classList.toggle('on',e.dataset.tab===t));document.querySelectorAll('.tab-body').forEach(e=>e.classList.toggle('on',e.id===t));}
+function switchSub(el){document.querySelectorAll('#t1 .doc').forEach(d=>d.style.display='none');$(el.dataset.doc).style.display='block';document.querySelectorAll('#t1 .st').forEach(s=>s.classList.remove('on'));el.classList.add('on');}
+
+/* ================= 采集 ================= */
+function collect(){
+  return {
+    title:$('f_title').value.trim(), dept:$('f_dept').value.trim(), report:$('f_report').value.trim(),
+    loc:$('f_loc').value.trim(), type:$('f_type').value, hc:$('f_hc').value.trim(),
+    urgency:$('f_urgency').value, salary:$('f_salary').value.trim(), expbrief:$('f_expbrief').value.trim(),
+    problem:$('f_problem').value.trim(), deliver:$('f_deliver').value.trim(), stage:$('f_stage').value,
+    team:$('f_team').value.trim(), coop:$('f_coop').value.trim(), kpi:$('f_kpi').value.trim(),
+    duties:$('f_duties').value, hard:$('f_hard').value, skill:$('f_skill').value, soft:$('f_soft').value,
+    selling:$('f_selling').value, usage:$('f_usage').value, style:$('f_style').value,
+    salaryshow:$('f_salaryshow').value, wordcount:$('f_wordcount').value, needstar:$('f_needstar').checked
+  };
+}
+const TBD='【待补充】';
+function lines(t){return String(t||'').split('\n').map(s=>s.trim()).filter(Boolean);}
+function fill(v){return v?esc(v):`<span class="tbd">${TBD}</span>`;}
+
+/* ================= 生成：结构化JD ================= */
+function parseDuties(raw){
+  return lines(raw).slice(0,10).map(l=>{
+    let kind='负责',txt=l;
+    const m=l.match(/^(负责|协同|主导|参与|配合)\s*[-—–:：\s]*\s*(.+)$/);
+    if(m){kind=m[1];txt=m[2];}
+    return {kind,txt};
+  });
+}
+const VERBS=['负责','主导','参与','协助','配合','制定','执行','搭建','维护','优化','拓展','完成','管理','跟进','组织','协调','分析','输出','推动','开拓','运营','策划','培训','招聘','处理','对接','编写','落地','盘点','统筹','建立','开展','提升','完成','跟进','接待','销售','服务','维护','挖掘','拜访','监控','整理','审核','撰写','拍摄','发布','回复','接待'];
+
+function salaryForExternal(d){
+  if(!d.salary) return TBD;
+  if(d.salaryshow==='写"面议"') return '面议（详见面试沟通）';
+  if(d.salaryshow==='展示下限+'){const m=d.salary.match(/(\d+(?:\.\d+)?)\s*[Kk千]/);return m?m[1]+'K 起':'面议';}
+  return d.salary;
+}
+function styleNote(style){return style==='国企/严谨规范'?'本岗位说明按公司规范体例编制，权责边界与考核口径以人事部门最终核定为准。':style==='互联网/直接扁平'?'我们直接、扁平、结果说话——能打胜仗就是最好的履历。':style==='制造/实业稳重'?'公司坚持稳健经营，重视一线历练与长期培养。':'';}
+
+function genExternal(d){
+  const duties=parseDuties(d.duties);
+  const dutyTxt=duties.length?duties.map(x=>`${x.kind==='负责'?'负责':x.kind}：${x.txt}`).join('\n'):`${TBD}（建议补充 8-10 条，动词开头、结果导向）`;
+  const hard=lines(d.hard).map(s=>s).join('\n')||TBD;
+  const soft=lines(d.soft);
+  const sell=lines(d.selling);
+  const wc=d.wordcount.split('-')[0];
+  let s='';
+  s+=`【${d.title||TBD}】${d.type&&d.type!=='【待补充】'?'（'+d.type+'）':''} | ${d.loc||TBD} | 薪资：${salaryForExternal(d)}\n`;
+  if(sell.length) s+=`\n✦ 为什么值得来：\n${sell.map(x=>'· '+x).join('\n')}\n`;
+  s+=`\n【我们要解决的问题】\n${d.problem||TBD}\n`;
+  s+=`\n【你要做什么】\n${dutyTxt}\n`;
+  s+=`\n【我们希望你】\n${hard}\n`;
+  if(soft.length) s+=`\n加分软素质：${soft.join('；')}\n`;
+  if(d.deliver) s+=`\n入职后 3-6 个月，我们希望看到：${d.deliver}\n`;
+  s+=`\n${styleNote(d.style)||''}`;
+  s+=`\n（对外版字数目标：${d.wordcount}；当前约 ${s.replace(/\s/g,'').length} 字）`;
+  return s;
+}
+
+function genInternal(d){
+  const duties=parseDuties(d.duties);
+  const own=duties.filter(x=>x.kind!=='协同').map(x=>x.txt);
+  const coop=duties.filter(x=>x.kind==='协同').map(x=>x.txt);
+  let s='';
+  s+=`内部岗位说明书（AI 初稿，须复核）\n`;
+  s+=`${'='.repeat(34)}\n`;
+  s+=`一、基本信息\n  职位名称：${d.title||TBD}\n  所属部门：${d.dept||TBD}\n  汇报对象：${d.report||TBD}\n  工作地点：${d.loc||TBD}\n  用工性质：${d.type||TBD}\n  招聘人数：${d.hc||TBD}\n  HC紧急度：${d.urgency||TBD}\n  薪资区间：${d.salary||TBD}\n`;
+  s+=`\n二、岗位使命\n  业务问题：${d.problem||TBD}\n  核心交付：${d.deliver||TBD}\n  业务阶段：${d.stage||TBD}${d.team?'；团队规模：'+d.team:''}\n`;
+  s+=`\n三、权责边界\n  主责事项：\n${own.length?own.map(x=>'    - '+x).join('\n'):'    '+TBD}\n  协同事项：\n${coop.length?coop.map(x=>'    - '+x).join('\n'):'    （无明确协同事项）'}\n  上下游协作：${d.coop||TBD}\n`;
+  s+=`\n四、任职资格（分层）\n  硬性门槛（一票否决）：\n${lines(d.hard).length?lines(d.hard).map(x=>'    - '+x).join('\n'):'    '+TBD}\n  专业技能：\n${lines(d.skill).length?lines(d.skill).map(x=>'    - '+x).join('\n'):'    '+TBD}\n  软性素质：\n${lines(d.soft).length?lines(d.soft).map(x=>'    - '+x).join('\n'):'    '+TBD}\n`;
+  s+=`\n五、考核与成功衡量\n  KPI/OKR：${d.kpi||TBD}\n  试用期预期：${d.deliver||TBD}\n`;
+  s+=`\n六、内部信息（不对外）\n  汇报线说明：向${d.report||TBD+'（待确认）'}汇报，${d.urgency&&d.urgency.indexOf('急')===0?'HC紧急，面试流程压缩至一周内':'按标准流程推进'}\n  完整薪资结构：${d.salary||TBD}\n`;
+  s+=`\n七、复核记录（强制人工复核，不替代人工确认真实岗位需求）\n  起草：AI 生成智能体 · ${new Date().toLocaleString('zh-CN')}\n  复核人（HR）：__________  日期：__________\n  复核人（业务负责人）：__________  日期：__________\n  结论：□ 通过  □ 修改后通过  □ 退回重写`;
+  return s;
+}
+
+/* BOSS 直聘版：口语化、短句、手机端友好、直接开聊 */
+function genBoss(d){
+  const duties=parseDuties(d.duties);
+  const hard=lines(d.hard), skill=lines(d.skill), soft=lines(d.soft), sell=lines(d.selling);
+  let s='';
+  s+=`【${d.title||TBD}】坐标 ${d.loc||TBD}　💰 ${salaryForExternal(d)}\n`;
+  s+=`\n我们在招这个岗，直接说重点 👇\n`;
+  if(d.problem||d.deliver){s+=`\n🎯 要解决的事：${d.problem||TBD}${d.deliver?('\n🏁 目标：'+d.deliver):''}\n`;}
+  if(duties.length){
+    s+=`\n💼 你来干啥：\n`;
+    duties.slice(0,6).forEach(x=>s+=`· ${x.txt}\n`);
+  }else s+=`\n💼 你来干啥：${TBD}\n`;
+  if(hard.length){s+=`\n📌 硬性门槛（卡这条）：\n`+hard.map(x=>'· '+x).join('\n')+'\n';}
+  else s+=`\n📌 硬性门槛：${TBD}\n`;
+  if(skill.length){s+=`\n➕ 加分项：${skill.map(x=>'· '+x).join('\n')}\n`;}
+  if(sell.length){s+=`\n💰 为啥来我们这：\n`+sell.map(x=>'· '+x).join('\n')+'\n';}
+  if(soft.length){s+=`\n🙋 我们喜欢的样子：${soft.join('；')}\n`;}
+  s+=`\n${d.urgency&&d.urgency.indexOf('急')===0?'🚀 HC 紧急，聊完尽快约面～\n':''}合适就直接开聊，BOSS 在线、不绕弯子～\n`;
+  s+=`\n（BOSS 直聘风格：口语化 + 短句 + 手机端友好；未填信息标【待补充】，绝不编造）`;
+  return s;
+}
+
+/* 朋友圈版：短文案、可分享、带 emoji 与话题标签 */
+function genMoment(d){
+  const sell=lines(d.selling);
+  let s='';
+  s+=`📢【${d.title||TBD}】招人中｜${d.loc||TBD}\n`;
+  s+=`\n${d.problem?('我们在做一件有意思的事：'+d.problem+'\n'):''}`;
+  s+=`如果你／你身边有${d.title||'合适的朋友'}，欢迎来对个暗号 👋\n`;
+  if(sell.length){s+=`\n✨ 为什么值得来：\n`+sell.map(x=>'· '+x).join('\n')+'\n';}
+  else s+=`\n✨ 团队靠谱、成长快（更多亮点待补充）\n`;
+  s+=`\n📍 ${d.loc||TBD}${d.salary?'　💰 '+salaryForExternal(d):''}\n`;
+  s+=`\n合适直接私信我，或把 TA 推给我，奶茶管够 🧋\n`;
+  s+=`\n#招聘 #${d.title||'人才招募'} #${d.loc||'本地机会'}`;
+  return s;
+}
+
+/* ================= 合规风险检测 ================= */
+const RULES=[
+ {name:'年龄限制',level:'高',re:/\d{1,2}\s*岁(以下|以内|左右|之间|以上)|年龄(不|得|要)?(超过|限制|要求)|不满\s*\d+\s*岁|(\d{2})\s*岁以下/,sug:'删除年龄表述，改以「能适应岗位工作强度/出差要求」等能力导向描述'},
+ {name:'性别歧视',level:'高',re:/(男性|女性|男士|女士|男生|女生)(优先|限|仅)|限(男性|女性|男生|女生)|仅限(男|女)(性|生)?|性别.{0,4}(男|女)/,sug:'删除性别限定；如岗位确有客观需要（如依法设定的岗位），咨询法务后用中性表述'},
+ {name:'婚育状况',level:'高',re:/已婚|未婚|已育|未育|婚育|生育|怀孕|备孕|二胎|三胎|结完婚|生完/,sug:'删除一切婚育相关表述——属《就业促进法》明确禁止的歧视项'},
+ {name:'户籍/地域',level:'高',re:/(本地|本市|XX市)户口|户口(限|须|在)|户籍(限|在)|本地人(优先|限)|限.{0,6}籍/,sug:'删除户籍/地域限定，改为「能长期在XX地工作」'},
+ {name:'民族/宗教/籍贯',level:'高',re:/民族|宗教|信仰.{0,3}(限|要求)|籍贯/,sug:'删除相关表述，宪法与就业法规明令禁止'},
+ {name:'健康/外貌',level:'中',re:/无重大疾病|无残疾|身高|体重|形象(气质)?佳|五官端正|气质佳|长相/,sug:'除法定健康岗位要求外删除；外貌类改为与业务相关的「商务形象得体」等'},
+ {name:'院校标签',level:'低',re:/985|211|双一流|名校(优先|毕业)/,sug:'建议改为「具备相应专业能力水平」，避免院校标签化筛选'},
+ {name:'夸张宣传',level:'低',re:/轻松(赚|月入)|躺赚|日结.{0,4}高|保底.{0,4}万(?!元以下)/,sug:'删除夸大收益表述，防止平台判定虚假招聘与劳动争议'},
+];
+function splitSentences(t){return String(t).split(/[。；;！!？?\n，]/).map(s=>s.trim()).filter(s=>s.length>2);}
+function compliance(d){
+  const allText=['title','dept','loc','salary','expbrief','problem','deliver','kpi','duties','hard','skill','soft','selling'].map(k=>d[k]).join('\n');
+  const sents=splitSentences(allText);
+  const issues=[];const seen=new Set();
+  RULES.forEach(r=>{
+    sents.forEach(sn=>{
+      const m=sn.match(r.re);
+      if(m&&!seen.has(r.name+m[0])){
+        seen.add(r.name+m[0]);
+        issues.push({sent:sn.slice(0,60),type:r.name,level:r.level,word:m[0],sug:r.sug});
+      }
+    });
+  });
+  // 质量检查
+  const qc=[];
+  const dl=lines(d.duties);
+  if(!d.title) qc.push(['缺','职位名称未填写，无法生成有效 JD']);
+  if(dl.length>0&&dl.length<8) qc.push(['建',`职责仅 ${dl.length} 条，建议补至 8-10 条，覆盖核心事项与权责边界`]);
+  if(dl.length>10) qc.push(['建',`职责 ${dl.length} 条超出建议上限，生成时已截取前 10 条`]);
+  const nonVerb=dl.filter(l=>!VERBS.some(v=>l.replace(/^(负责|协同|主导|参与|配合)\s*[-—–:：]?\s*/,'').startsWith(v)));
+  if(nonVerb.length) qc.push(['建',`以下职责未用动词开头：${nonVerb.slice(0,3).map(l=>l.slice(0,15)).join('、')}${nonVerb.length>3?' 等':''}——建议改为「负责/主导/开拓+具体事项」`]);
+  if(!d.salary) qc.push(['建','薪资区间未填写：未注明薪资的 JD 平台曝光与投递转化显著更低']);
+  if(!d.loc) qc.push(['缺','工作地点未填写']);
+  if(!lines(d.hard).length) qc.push(['建','硬性门槛未填写：分层任职资格缺失会影响简历筛选打分']);
+  return {issues,qc};
+}
+function renderRisk(r){
+  let h='';
+  if(r.issues.length===0){
+    h+=`<p class="risk-ok">✓ 未检出歧视性/违规表述</p>`;
+  }else{
+    h+=`<table><thead><tr><th style="width:34%">风险语句</th><th>类型</th><th>等级</th><th style="width:30%">合规修改建议</th></tr></thead><tbody>`;
+    r.issues.forEach(i=>{
+      const cls=i.level==='高'?'high':i.level==='中'?'mid':'low';
+      h+=`<tr><td>${esc(i.sent)}</td><td>${i.type}<br><span style="color:#8a97a8;font-size:11px">命中：「${esc(i.word)}」</span></td><td><span class="pill ${cls}">${i.level}风险</span></td><td>${i.sug}</td></tr>`;
+    });
+    h+=`</tbody></table>`;
+  }
+  h+=`<h3 style="font-size:13.5px;color:var(--primary-dark);margin:14px 0 6px">质量与完整性检查</h3><table><tbody>`;
+  r.qc.forEach(([tag,txt])=>{
+    h+=`<tr><td style="width:60px"><span class="pill ${tag==='缺'?'mid':'low'}">${tag==='缺'?'缺失':'建议'}</span></td><td>${txt}</td></tr>`;
+  });
+  if(!r.qc.length) h+=`<tr><td colspan="2" class="risk-ok">✓ 结构完整</td></tr>`;
+  h+=`</tbody></table>
+  <p class="hint" style="margin-top:10px">合规口径：覆盖年龄、性别、婚育、地域/户籍、民族宗教、健康外貌、院校标签、夸大宣传 8 类高频风险；报告仅做初筛提示，最终以 HR + 法务复核为准。</p>`;
+  $('risk_body').innerHTML=h;
+}
+
+/* ================= 配套附件 ================= */
+function genAttach(d){
+  const hard=lines(d.hard),skill=lines(d.skill),soft=lines(d.soft);
+  let h='<h3 style="font-size:14px;color:var(--primary-dark);margin-bottom:6px">A. 岗位人才画像（AI 初稿，须复核）</h3>';
+  h+=`<p style="font-size:12.5px;color:var(--muted);margin-bottom:8px">一句话画像：${d.title||TBD} = ${hard.length?hard[0]:'（硬性门槛待补充）'} + ${soft.length?soft[0]:'（软性素质待补充）'}，在${d.stage&&d.stage!=='【待补充】'?d.stage:''}业务阶段解决「${d.problem||TBD}」。</p>`;
+  h+=`<table><thead><tr><th>筛选维度</th><th>是否通过制</th><th>权重</th><th>评分标准</th></tr></thead><tbody>`;
+  h+=`<tr><td>硬性门槛（学历/年限/证书/专业）</td><td>是（一票否决）</td><td>—</td><td>${hard.length?hard.map(esc).join('；'):'待补充'}；任一不满足→直接淘汰</td></tr>`;
+  h+=`<tr><td>专业技能与经验</td><td>否</td><td>40%</td><td>${skill.length?skill.map(esc).join('；'):'待补充'}；每命中1项+，上限40</td></tr>`;
+  h+=`<tr><td>业务匹配度（行业/阶段/客户）</td><td>否</td><td>20%</td><td>与「${d.problem?esc(d.problem.slice(0,20)):'业务问题'}」的解决经验相关度，上限20</td></tr>`;
+  h+=`<tr><td>软性素质</td><td>否</td><td>25%</td><td>${soft.length?soft.map(esc).join('；'):'待补充'}；面试官按1-5分×5</td></tr>`;
+  h+=`<tr><td>稳定性与动机</td><td>否</td><td>15%</td><td>通勤/薪资预期/离职原因合理性，上限15</td></tr>`;
+  h+=`<tr><td><b>合计</b></td><td></td><td><b>100</b></td><td><b>≥75 进面试；60-74 备选池；&lt;60 淘汰</b></td></tr></tbody></table>`;
+  h+=`<p class="hint" style="margin:6px 0 14px">与简历筛选 SOP 打通：HR 按此表逐项打分→汇总→复核，形成完整招聘链路。</p>`;
+  // STAR
+  const duties=parseDuties(d.duties).slice(0,5);
+  h+='<h3 style="font-size:14px;color:var(--primary-dark);margin-bottom:6px">B. STAR 初筛面试题库（AI 初稿）</h3>';
+  h+='<table><thead><tr><th style="width:6%">#</th><th style="width:46%">情境问题（STAR）</th><th>考察点 / 追问</th></tr></thead><tbody>';
+  let i=1;
+  duties.forEach(x=>{
+    h+=`<tr><td>${i++}</td><td>请完整讲述一次你${x.kind==='协同'?'协同他人':'负责'}「${esc(x.txt.slice(0,30))}」的经历：当时的背景（S）、你承担的具体任务与权责（T）、采取了哪些关键行动（A）、最终可量化的结果（R）。</td><td>核实权责边界（${x.kind}）与结果真实性；追问：结果不理想时你的复盘与后续改进是什么？</td></tr>`;
+  });
+  soft.slice(0,2).forEach(s=>{
+    h+=`<tr><td>${i++}</td><td>请举例说明一个最能体现你「${esc(s.slice(0,16))}」的真实工作场景（STAR 完整讲述）。</td><td>软性素质验证；追问：当时最困难的决定是什么？</td></tr>`;
+  });
+  if(d.stage&&d.stage.indexOf('初创')>-1) h+=`<tr><td>${i++}</td><td>请讲述一段你从 0 到 1 搭建某项业务/流程/客户的经历（STAR）。</td><td>匹配${d.stage}业务阶段；追问：没有先例时你如何定打法？</td></tr>`;
+  if(d.deliver) h+=`<tr><td>${i++}</td><td>如果你入职后被要求在 3 个月内实现「${esc(d.deliver.slice(0,24))}」，你会怎么拆解目标与制定前 30 天计划？</td><td>结果导向与计划性（假设性问题，补充 STAR 之外的结构化考察）</td></tr>`;
+  h+='</tbody></table>';
+  return h;
+}
+
+/* ================= 主流程 ================= */
+let lastData=null;
+function generate(){
+  const d=collect();
+  if(!d.title){toast('请先填写「职位名称」（必填）');$('f_title').focus();switchTab('t1');return;}
+  lastData=d;
+  const showExt=d.usage.indexOf('对外')>-1, showInt=d.usage.indexOf('内部')>-1;
+  $('doc_ext').innerHTML   = showExt? genExternal(d) : '（按输出偏好：本次不生成对外发布类版本）';
+  $('doc_boss').innerHTML  = showExt? genBoss(d)     : '（按输出偏好：本次不生成对外发布类版本）';
+  $('doc_moment').innerHTML= showExt? genMoment(d)   : '（按输出偏好：本次不生成对外发布类版本）';
+  $('doc_int').innerHTML   = showInt? genInternal(d) : '（按输出偏好：本次不生成内部版）';
+  if(!showExt){switchSub(document.querySelector('#t1 .st[data-doc="doc_int"]'));}
+  else{document.querySelectorAll('#t1 .doc').forEach(x=>x.style.display='none');$('doc_ext').style.display='block';document.querySelectorAll('#t1 .st').forEach(s=>s.classList.remove('on'));document.querySelector('#t1 .st[data-doc="doc_ext"]').classList.add('on');}
+  $('meta1').innerHTML=`生成时间：${new Date().toLocaleString('zh-CN')} ｜ 输出用途：${d.usage} ｜ 风格：${d.style} ｜ <span class="tbd">状态：AI 初稿 · 待人工复核</span>`;
+  const r=compliance(d);renderRisk(r);
+  $('attach_body').innerHTML=d.needstar?genAttach(d):'<div class="empty-tip">本次未勾选生成配套附件。</div>';
+  $('plain_out').value=$('doc_ext').innerText.replace(/（对外版字数目标.*$/,'').trim();
+  const verParts=[];if(showExt)verParts.push('对外+BOSS+朋友圈');if(showInt)verParts.push('内部版');
+  addLog(d,r.issues.length,verParts.join(' / ')||'无');
+  toast('已生成：JD '+(showExt?'对外/BOSS/朋友圈':'')+(showInt?' + 内部版':'')+' + 合规报告'+(d.needstar?' + 配套附件':''));
+  switchTab('t1');
+}
+function copyDoc(){const el=[...document.querySelectorAll('#t1 .doc')].find(x=>x.style.display!=='none');copyText(el?el.innerText:'');}
+function copyPlain(){copyText($('plain_out').value);}
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('已复制到剪贴板'),()=>fallbackCopy(t));}
+  else fallbackCopy(t);
+}
+function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('已复制到剪贴板');}catch(e){toast('复制失败，请手动选择文本');}document.body.removeChild(ta);}
+
+/* ================= 落地配套：日志 & 模板 ================= */
+function addLog(d,riskN,ver){
+  const logs=JSON.parse(localStorage.getItem('jd_agent_logs')||'[]');
+  logs.unshift({t:new Date().toLocaleString('zh-CN'),p:d.title,v:ver,r:riskN});
+  localStorage.setItem('jd_agent_logs',JSON.stringify(logs.slice(0,50)));
+  renderLogs();
+}
+function renderLogs(){
+  const logs=JSON.parse(localStorage.getItem('jd_agent_logs')||'[]');
+  $('log_tbl').querySelector('tbody').innerHTML=logs.length?logs.map(l=>`<tr><td>${l.t}</td><td>${esc(l.p)}</td><td>${l.v}</td><td>${l.r>0?`<span class="pill mid">${l.r} 项待处理</span>`:'<span class="pill ok">通过</span>'}</td></tr>`).join(''):'<tr><td colspan="4" style="color:#8a97a8">暂无生成记录</td></tr>';
+}
+function clearLogs(){if(confirm('确认清空全部生成日志？')){localStorage.removeItem('jd_agent_logs');renderLogs();}}
+
+const BUILTIN=[
+ {name:'市场销售（示例·农资）',ds:'终端铺货型销售，含出差与提成卖点',data:{title:'市场销售代表',dept:'销售部',report:'销售总监',loc:'XX市（区域内出差）',type:'全职',hc:'3人',urgency:'紧急（2周内到岗）',salary:'6-9K，固浮比7:3，年终奖1个月',problem:'区域县域市场空白，终端农资店覆盖不足',deliver:'3个月内完成目标县60家农资店建档与首单转化',stage:'扩张/规模复制',team:'销售团队8人',coop:'向上对接产品部，横向支持客服与物流',kpi:'新开合作网点≥15家/月，回款率≥95%',duties:'负责 —— 开拓区域农资终端网点，每月新开合作店≥15家\n负责 —— 维护存量客户客情，完成月度回款指标\n协同 —— 配合产品部完成新品到店陈列与培训\n负责 —— 收集一线市场信息与竞品动态，每月输出市场反馈\n负责 —— 组织小型农户/店主产品推介会\n协同 —— 跟进物流异常与退换货处理\n负责 —— 完成销售日报与周复盘',hard:'大专及以上学历，专业不限\n1年以上快消/农资/日化销售经验\n持C1驾照，能适应区域内长期出差',skill:'熟悉农资店进销存与赊销逻辑者优先\n有县域市场铺货经验优先',soft:'抗压性强，能独立跑市场\n沟通表达清晰，结果导向',selling:'提成上不封顶，销冠月入2W+\n区域保护政策，不内卷\n带教体系完善，6个月晋升路径清晰',usage:'对外发布 + 内控版双输出',style:'通用',salaryshow:'展示区间',wordcount:'500-800（标准）',needstar:true}},
+ {name:'新媒体运营（示例）',ds:'账号内容与增长方向通用模板',data:{title:'新媒体运营专员',dept:'市场部',report:'市场经理',loc:'XX市',type:'全职',hc:'1人',urgency:'常规',salary:'5-8K，13薪',problem:'公司新媒体账号内容产量低、粉丝增长停滞',deliver:'3个月内主账号月均涨粉1万+，单条爆款（10w+播放）≥1',stage:'成长',team:'市场部5人',coop:'与设计、销售协作产出素材',kpi:'月均发布≥20条，涨粉1万+，线索转化≥50条/月',duties:'负责 —— 短视频账号日常内容策划、拍摄与发布\n负责 —— 追踪热点并快速产出选题，月均发布≥20条\n负责 —— 评论区运营与私信回复，沉淀用户线索\n协同 —— 配合销售团队产出产品种草内容\n负责 —— 每周输出数据复盘报告并迭代选题库',hard:'大专及以上学历，新闻/传媒/营销相关专业优先\n1年以上短视频或图文运营经验\n有个人账号运营案例者优先',skill:'熟练使用剪映等剪辑工具\n具备基础数据分析能力',soft:'网感强，对热点敏感\n自驱力强，能接受内容迭代压力',selling:'内容方向自主权大，不设条条框框\n账号处于增长期，容易出成绩',usage:'对外发布 + 内控版双输出',style:'互联网/直接扁平',salaryshow:'展示区间',wordcount:'500-800（标准）',needstar:true}},
+ {name:'通用职能岗（空白框架）',ds:'行政/财务/人事等通用岗位骨架',data:{title:'',dept:'',report:'',loc:'',type:'全职',hc:'',urgency:'常规',salary:'',problem:'',deliver:'',stage:'',team:'',coop:'',kpi:'',duties:'负责 —— （核心事项1，动词开头+结果导向）\n负责 —— （核心事项2）\n协同 —— （协同事项）',hard:'（学历要求）\n（年限要求）\n（证书/专业要求）',skill:'（专业技能1）\n（专业技能2）',soft:'（软性素质1）\n（软性素质2）',selling:'',usage:'对外发布 + 内控版双输出',style:'通用',salaryshow:'展示区间',wordcount:'500-800（标准）',needstar:true}}
+];
+function renderTpls(){
+  const mine=JSON.parse(localStorage.getItem('jd_agent_templates')||'[]');
+  let h='';
+  BUILTIN.forEach((t,i)=>{
+    h+=`<div class="tpl-item"><div><div class="nm">${t.name}</div><div class="ds">${t.ds}</div></div><button class="btn-ghost btn-mini" onclick="applyBuiltin(${i})">复用</button></div>`;
+  });
+  mine.forEach((t,i)=>{
+    h+=`<div class="tpl-item"><div><div class="nm">${esc(t.name)}</div><div class="ds">自定义模板 · ${t.savedAt}</div></div><button class="btn-ghost btn-mini" onclick="applyMine(${i})">复用</button><button class="btn-ghost btn-mini" onclick="delMine(${i})">删除</button></div>`;
+  });
+  $('tpl_list').innerHTML=h||'<div class="hint">暂无自定义模板</div>';
+}
+function applyBuiltin(i){applyData(BUILTIN[i].data);}
+function applyMine(i){const mine=JSON.parse(localStorage.getItem('jd_agent_templates')||'[]');applyData(mine[i].data);}
+function delMine(i){if(!confirm('删除该自定义模板？'))return;const mine=JSON.parse(localStorage.getItem('jd_agent_templates')||'[]');mine.splice(i,1);localStorage.setItem('jd_agent_templates',JSON.stringify(mine));renderTpls();}
+function applyData(d){
+  const map={f_title:'title',f_dept:'dept',f_report:'report',f_loc:'loc',f_hc:'hc',f_salary:'salary',f_expbrief:'expbrief',f_problem:'problem',f_deliver:'deliver',f_team:'team',f_coop:'coop',f_kpi:'kpi',f_duties:'duties',f_hard:'hard',f_skill:'skill',f_soft:'soft',f_selling:'selling'};
+  for(const k in map){$(k).value=d[map[k]]||'';}
+  $('f_type').value=d.type||'';$('f_urgency').value=d.urgency||'';$('f_stage').value=d.stage||'';
+  $('f_usage').value=d.usage||'对外发布 + 内控版双输出';$('f_style').value=d.style||'通用';
+  $('f_salaryshow').value=d.salaryshow||'展示区间';$('f_wordcount').value=d.wordcount||'500-800（标准）';
+  $('f_needstar').checked=d.needstar!==false;
+  toast('模板已载入');
+}
+function saveTemplate(){
+  const name=prompt('模板名称：',$('f_title').value.trim()||'未命名模板');
+  if(!name)return;
+  const mine=JSON.parse(localStorage.getItem('jd_agent_templates')||'[]');
+  mine.unshift({name,data:collect(),savedAt:new Date().toLocaleDateString('zh-CN')});
+  localStorage.setItem('jd_agent_templates',JSON.stringify(mine.slice(0,30)));
+  renderTpls();toast('已保存为模板，可跨岗位复用');
+}
+function loadDemo(){applyBuiltin(0);toast('已载入示例：市场销售（农资）——可直接点「生成」体验');}
+function clearAll(){if(!confirm('清空左侧全部输入？'))return;document.querySelectorAll('#input-panel input[type=text],#input-panel textarea').forEach(e=>e.value='');['f_type','f_urgency','f_stage'].forEach(i=>$(i).value='');toast('已清空');}
+
+renderTpls();renderLogs();
+</script>
+</body>
+</html>
