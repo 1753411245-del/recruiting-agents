@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通用人才寻访智能体</title>
+<style>
+:root{
+  --primary:#1a3a6b; --primary-light:#eef3fb; --accent:#d9822b; --accent-light:#fdf3e7;
+  --bg:#f5f7fa; --card:#ffffff; --border:#e2e8f0; --text:#1f2937; --muted:#6b7280;
+  --green:#16a34a; --green-light:#ecfdf3; --red:#dc2626; --red-light:#fef2f2;
+  --amber:#d97706; --amber-light:#fffbeb; --blue:#2563eb; --blue-light:#eff6ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+header{background:linear-gradient(135deg,#122a52,#1a3a6b 60%,#245092);color:#fff;padding:22px 32px;}
+header h1{font-size:22px;letter-spacing:1px;}
+header p{margin-top:6px;font-size:12.5px;opacity:.85;}
+.layer-tags{display:inline-flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.layer-tags span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);padding:3px 12px;border-radius:12px;font-size:12px;}
+nav{display:flex;gap:4px;background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:20;overflow-x:auto;}
+nav button{border:none;background:none;padding:13px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;}
+nav button.active{color:var(--primary);border-bottom-color:var(--accent);font-weight:bold;}
+nav button:hover{color:var(--primary);}
+main{max-width:1180px;margin:0 auto;padding:22px 24px 60px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.card h3{font-size:15px;color:var(--primary);margin-bottom:4px;}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+label{display:block;font-size:12.5px;font-weight:bold;color:#374151;margin:10px 0 4px;}
+label .tip{font-weight:normal;color:var(--muted);font-size:11.5px;}
+textarea,input[type=text],input[type=number],select{width:100%;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fbfcfe;resize:vertical;}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,58,107,.1);}
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;margin:4px 4px 0 0;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:#245092;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-accent:hover{background:#c06f1e;}
+.btn-ghost{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+.btn-ghost:hover{background:var(--primary-light);}
+.btn-danger{background:#fff;color:var(--red);border:1px solid var(--red);}
+.btn-sm{padding:4px 10px;font-size:12px;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:bold;}
+.badge.hi{background:var(--green-light);color:var(--green);border:1px solid #a7f3c9;}
+.badge.mid{background:var(--amber-light);color:var(--amber);border:1px solid #fcd34d;}
+.badge.lo{background:var(--red-light);color:var(--red);border:1px solid #fca5a5;}
+.badge.gray{background:#f3f4f6;color:var(--muted);}
+.badge.blue{background:var(--blue-light);color:var(--blue);}
+.warn{background:var(--amber-light);border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.warn.show{display:block;}
+.ok{background:var(--green-light);border:1px solid #a7f3c9;color:#166534;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.ok.show{display:block;}
+.portrait-block{border:1px solid var(--border);border-left:5px solid var(--primary);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fff;}
+.portrait-block h4{font-size:13.5px;color:var(--primary);margin-bottom:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{font-size:11.5px;padding:2px 9px;border-radius:10px;background:var(--primary-light);color:var(--primary);}
+.chip.exclude{background:var(--red-light);color:var(--red);}
+.chip.plus{background:var(--green-light);color:var(--green);}
+.chip.soft{background:var(--accent-light);color:#92400e;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:var(--primary-light);color:var(--primary);text-align:left;padding:8px 10px;font-weight:bold;}
+td{border-top:1px solid var(--border);padding:8px 10px;vertical-align:top;}
+tr:hover td{background:#fafbfd;}
+.script-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.script-tabs button{border:1px solid var(--border);background:#fff;border-radius:16px;padding:5px 14px;font-size:12.5px;cursor:pointer;font-family:inherit;color:var(--muted);}
+.script-tabs button.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.copy-area{width:100%;min-height:150px;background:#fbfcfe;font-size:12.5px;line-height:1.8;}
+.kw-box{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:10px 14px;font-family:Consolas,monospace;font-size:12.5px;line-height:1.8;margin:8px 0;white-space:pre-wrap;word-break:break-all;}
+.check-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;font-size:12.5px;border-bottom:1px dashed var(--border);}
+.check-item input{margin-top:3px;}
+.muted{color:var(--muted);font-size:12px;}
+.mt10{margin-top:10px;}
+.hr{border:none;border-top:1px dashed var(--border);margin:14px 0;}
+.status-select{border:1px solid var(--border);border-radius:6px;padding:3px 6px;font-size:12px;font-family:inherit;background:#fff;}
+.mini-input{border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;background:#fbfcfe;width:100%;}
+footer{max-width:1180px;margin:0 auto;padding:0 24px 30px;font-size:11.5px;color:var(--muted);line-height:1.8;}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:9px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:99;pointer-events:none;}
+.toast.show{opacity:.92;}
+@media (max-width:820px){.grid2,.grid3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧭 通用人才寻访智能体</h1>
+  <p>输入层：采集与读取 ｜ 输出层：交付物 ｜ 落地配套：产品与实施 —— 全流程本地运行，候选人隐私不出本机</p>
+  <div class="layer-tags">
+    <span>输入01 岗位JD与寻访需求</span><span>输入02 背景与预算</span><span>输入03 目标人才池</span>
+    <span>输入04 对象与触达渠道</span><span>输入05 输出偏好</span>
+    <span>输出01 精准画像</span><span>输出02 渠道与名单</span><span>输出03 定向话术</span><span>输出04 多渠道版本</span><span>输出05 跟进与异议</span>
+    <span>配套 人才库CRM</span><span>配套 合规留痕</span>
+  </div>
+</header>
+
+<nav id="nav">
+  <button class="active" data-p="p1">📥 寻访需求（输入层）</button>
+  <button data-p="p2">🧬 精准人才画像</button>
+  <button data-p="p3">🔎 渠道与寻访名单</button>
+  <button data-p="p4">💬 触达话术生成</button>
+  <button data-p="p5">🔄 跟进与异议处理</button>
+  <button data-p="p6">🗂 人才库 CRM</button>
+  <button data-p="p7">📚 话术库 · 合规 · 留痕</button>
+</nav>
+
+<main>
+<!-- ============ P1 输入层 ============ -->
+<div class="panel active" id="p1">
+  <div class="card">
+    <h3>寻访项目选择</h3>
+    <div class="sub">可保存多个寻访项目（一个岗位一个项目），以下所有输入层配置对当前项目生效</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:2;min-width:200px;">
+        <label>当前寻访项目</label>
+        <select id="jobSelect" onchange="switchJob()"></select>
+      </div>
+      <button class="btn btn-primary" onclick="newJob()">＋ 新建寻访项目</button>
+      <button class="btn btn-ghost" onclick="loadDemo()">载入示例项目</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteJob()">删除当前项目</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入01 · 岗位JD与寻访需求</h3>
+    <div class="sub">岗位要求、必备与优先技能、目标公司/行业、职级层级与汇报线</div>
+    <div class="grid2">
+      <div>
+        <label>岗位名称</label>
+        <input type="text" id="j_title" placeholder="例：区域销售经理（农资/农化）">
+      </div>
+      <div>
+        <label>职级层级与汇报线 <span class="tip">（例：经理级，向大区总监汇报，带3-5人团队）</span></label>
+        <input type="text" id="j_level" placeholder="经理级，汇报大区总监">
+      </div>
+    </div>
+    <label>岗位画像 / JD 全文 <span class="tip">（可直接粘贴 JD，或点击「与上游智能体打通」导入岗位画像）</span></label>
+    <textarea id="j_portrait" rows="4" placeholder="例：负责华中区域农资产品渠道拓展，线下拜访县域经销商与农资店，促成铺货与复购，考核铺货率与回款率"></textarea>
+    <div class="grid2">
+      <div>
+        <label>必备技能 / 硬性要求 <span class="tip">（每行一条，同义词用 | 分隔）</span></label>
+        <textarea id="j_hard" rows="4" placeholder="3年以上渠道|大客户销售经验&#10;农资|农化|化肥|种子行业背景&#10;可适应长期出差"></textarea>
+      </div>
+      <div>
+        <label>优先技能 / 加分项</label>
+        <textarea id="j_plus" rows="4" placeholder="有县域经销商资源&#10;带过团队&#10;农学|植保相关专业"></textarea>
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>目标公司 / 行业清单 <span class="tip">（每行一个，用于定向寻访与竞对映射）</span></label>
+        <textarea id="j_companies" rows="4" placeholder="某大型农化集团&#10;某_crop保护头部企业&#10;同区域头部农资经销商"></textarea>
+      </div>
+      <div>
+        <label>排除项 / 一票否决 <span class="tip">（画像中明确排除的背景或特征）</span></label>
+        <textarea id="j_exclude" rows="4" placeholder="频繁跳槽（1年一换）&#10;仅快消快_EXPI背景无B端经验&#10;同业竞业限制未到期敏感岗位"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入02 · 寻访背景与预算</h3>
+    <div class="sub">主动定向挖掘还是被动接递补、岗位紧急度、薪资预算区间</div>
+    <div class="grid3">
+      <div>
+        <label>寻访模式</label>
+        <select id="j_mode">
+          <option value="proactive">主动定向挖掘</option>
+          <option value="backup">被动接递补（人才池储备）</option>
+        </select>
+      </div>
+      <div>
+        <label>岗位紧急度</label>
+        <select id="j_urgency">
+          <option value="high">🔥 紧急（2周内到面）</option>
+          <option value="normal">正常（1个月内）</option>
+          <option value="low">宽松（长期储备）</option>
+        </select>
+      </div>
+      <div>
+        <label>薪资预算区间</label>
+        <input type="text" id="j_salary" placeholder="例：12k-18k + 提成">
+      </div>
+    </div>
+    <label>招聘原因 / 寻访背景</label>
+    <textarea id="j_reason" rows="2" placeholder="例：新开华中大区，编制1人；替代离职补员 / 业务扩张新增"></textarea>
+  </div>
+
+  <div class="card">
+    <h3>输入03 · 目标人才池</h3>
+    <div class="sub">现有与过往人才库、竞品公司清单、目标院校、人脉与圈层</div>
+    <div class="grid3">
+      <div>
+        <label>现有人才库可复用 <span class="tip">（过往接触过、长尾复用的人选）</span></label>
+        <textarea id="j_pool_exist" rows="3" placeholder="例：人才库中有8位农化区域销售，去年接触过3位"></textarea>
+      </div>
+      <div>
+        <label>目标院校 / 培养来源</label>
+        <textarea id="j_schools" rows="3" placeholder="例：某农业大学·农学专业&#10;行业培训体系出身优先"></textarea>
+      </div>
+      <div>
+        <label>人脉与圈层</label>
+        <textarea id="j_networks" rows="3" placeholder="例：农资行业经销商社群、行业展会通讯录、老员工内推"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入04 · 对象与触达渠道</h3>
+    <div class="sub">候选人在职状态、是否看机会、可用触达渠道</div>
+    <div class="grid2">
+      <div>
+        <label>重点触达对象（在职状态）</label>
+        <div id="statusBoxes" class="chips" style="margin-top:6px;"></div>
+      </div>
+      <div>
+        <label>可用触达渠道</label>
+        <div id="channelBoxes" class="chips" style="margin-top:6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入05 · 输出偏好</h3>
+    <div class="sub">话术风格、信息完整度、是否需要多渠道多版本</div>
+    <div class="grid3">
+      <div>
+        <label>话术风格</label>
+        <select id="j_style">
+          <option value="pro">专业（猎头式、直接谈价值）</option>
+          <option value="warm">亲和（朋友式、先建立关系）</option>
+        </select>
+      </div>
+      <div>
+        <label>信息完整度</label>
+        <select id="j_detail">
+          <option value="short">简短（首触150字内）</option>
+          <option value="standard">标准（首触250字左右）</option>
+          <option value="full">详尽（首触400字+岗位详情）</option>
+        </select>
+      </div>
+      <div>
+        <label>多渠道多版本</label>
+        <select id="j_multichannel">
+          <option value="yes">需要（按渠道分别生成）</option>
+          <option value="no">不需要（只出主渠道）</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <button class="btn btn-primary" onclick="saveJob()">💾 保存当前项目配置</button>
+      <span class="muted">所有数据仅保存在本机浏览器 localStorage</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ P2 人才画像 ============ -->
+<div class="panel" id="p2">
+  <div class="card">
+    <h3>输出01 · 精准人才画像生成</h3>
+    <div class="sub">基于输入层配置，生成「硬条件 + 软特征 + 排除项」三段式画像，可直接作为寻访筛人标准，也可交给下游筛选智能体使用</div>
+    <button class="btn btn-accent" onclick="genPortrait()">🧬 生成本项目人才画像</button>
+    <button class="btn btn-ghost" onclick="copyText('portraitOutput')">📋 一键复制画像全文</button>
+    <div class="warn" id="portraitWarn">请先在「寻访需求」页完善岗位名称与必备技能，画像才有骨架。</div>
+    <div id="portraitOutput"></div>
+  </div>
+  <div class="card">
+    <h3>与上游智能体打通（落地配套01）</h3>
+    <div class="sub">上游「JD生成智能体」「简历筛选智能体」的画像与标准可直接粘贴到此处一键回填本项目</div>
+    <textarea id="upstreamPaste" rows="3" placeholder="粘贴上游画像 JSON 或纯文本（必备技能/加分项/排除项 每行一条会被自动识别回填）"></textarea>
+    <button class="btn btn-primary" onclick="importUpstream()">⬆ 识别并回填到输入层</button>
+    <div class="ok" id="upstreamOk">已识别并回填到「寻访需求」页，请核对后保存。</div>
+  </div>
+</div>
+
+<!-- ============ P3 渠道与名单 ============ -->
+<div class="panel" id="p3">
+  <div class="card">
+    <h3>输出02-A · 寻访渠道规划与搜索关键词</h3>
+    <div class="sub">按可用渠道生成本岗位的搜索关键词组合（可直接粘贴到脉脉/猎聘/领英搜索框），并给出优先级排序建议</div>
+    <button class="btn btn-accent" onclick="genKeywords()">🔑 生成关键词组合与渠道建议</button>
+    <div id="keywordOutput"></div>
+  </div>
+
+  <div class="card">
+    <h3>输出02-B · 寻访名单（候选人人选登记）</h3>
+    <div class="sub">登记寻访到的候选人，自动按「在职状态匹配 + 渠道优先级 + 看机会意愿」计算优先级并排序；同步进入人才库CRM</div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>姓名/代号</label><input type="text" id="c_name" class="mini-input" style="padding:8px;font-size:13px;" placeholder="张先生 / 候选A"></div>
+      <div><label>当前公司</label><input type="text" id="c_company" class="mini-input" style="padding:8px;font-size:13px;" placeholder="某农化集团"></div>
+      <div><label>当前职位</label><input type="text" id="c_role" class="mini-input" style="padding:8px;font-size:13px;" placeholder="区域销售经理"></div>
+    </div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>在职状态</label>
+        <select id="c_status" style="padding:8px;font-size:13px;">
+          <option value="active_looking">离职/active看机会</option>
+          <option value="onboard_open">在职·看机会</option>
+          <option value="onboard_passive">在职·被动观望</option>
+          <option value="onboard_closed">在职·暂不考虑</option>
+        </select>
+      </div>
+      <div><label>触达渠道</label>
+        <select id="c_channel" style="padding:8px;font-size:13px;">
+          <option>脉脉私信</option><option>猎聘沟通</option><option>电话</option><option>邮件</option><option>内推</option><option>社群/圈层</option>
+        </select>
+      </div>
+      <div><label>看机会意愿（1-5星）</label>
+        <select id="c_intent" style="padding:8px;font-size:13px;">
+          <option value="5">5 · 强意愿</option><option value="4" selected>4 · 有兴趣</option><option value="3">3 · 中性</option><option value="2">2 · 观望</option><option value="1">1 · 暂无</option>
+        </select>
+      </div>
+    </div>
+    <label>匹配备注 <span class="tip">（命中哪些硬条件/加分项，逐条记）</span></label>
+    <input type="text" id="c_note" placeholder="例：5年农化渠道经验✓ 可出差✓ 带过4人团队✓">
+    <button class="btn btn-primary" onclick="addCandidate()">＋ 加入寻访名单</button>
+    <button class="btn btn-accent btn-sm" onclick="sim20()">🎲 模拟20份候选人（演练）</button>
+    <div class="hr"></div>
+    <div style="overflow-x:auto;">
+      <table id="candTable">
+        <thead><tr><th>优先级</th><th>人选</th><th>公司/职位</th><th>状态</th><th>渠道</th><th>意愿</th><th>匹配备注</th><th>操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="muted mt10">优先级规则：在职·看机会/离职 &gt; 在职·观望；强意愿 &gt; 弱意愿；主动挖掘模式下内推/圈层渠道加权。</div>
+  </div>
+</div>
+
+<!-- ============ P4 触达话术 ============ -->
+<div class="panel" id="p4">
+  <div class="card">
+    <h3>输出03/04 · 定向触达话术 + 多渠道版本</h3>
+    <div class="sub">自我介绍 → 岗位吸引点 → 在职顾虑化解 → 首约约聊；按渠道与对象状态自动适配；生成后可编辑并存入话术库沉淀</div>
+    <div class="script-tabs" id="scriptTabs">
+      <button class="on" data-ch="脉脉私信">脉脉私信</button>
+      <button data-ch="猎聘沟通">猎聘沟通</button>
+      <button data-ch="电话开场白">电话开场白</button>
+      <button data-ch="邮件版">邮件版</button>
+      <button data-ch="内推/圈层引荐">内推/圈层引荐</button>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>针对人选（可选） <span class="tip">（选择后话术中带称呼与定制切入点）</span></label>
+        <select id="scriptTarget" style="padding:8px;font-size:13px;"><option value="">—— 通用版本 ——</option></select>
+      </div>
+      <div>
+        <label>切入吸引点 <span class="tip">（留空则自动从岗位画像提取）</span></label>
+        <input type="text" id="scriptHook" style="padding:8px;font-size:13px;" placeholder="例：新大区从0搭建、区域话语权、提成上不封顶">
+      </div>
+    </div>
+    <button class="btn btn-accent" onclick="genScript()">✍️ 生成话术</button>
+    <button class="btn btn-ghost" onclick="copyText('scriptOutput')">📋 复制话术</button>
+    <button class="btn btn-primary" onclick="saveScriptToLib()">💾 存入话术库</button>
+    <textarea id="scriptOutput" class="copy-area" style="margin-top:10px;" placeholder="点击「生成话术」…生成后可直接编辑再复制/存库"></textarea>
+    <div class="ok" id="scriptSavedOk">已存入话术库，可在「话术库·合规·留痕」页查看与标记效果。</div>
+  </div>
+</div>
+
+<!-- ============ P5 跟进与异议 ============ -->
+<div class="panel" id="p5">
+  <div class="card">
+    <h3>输出05-A · 首触后跟进节奏</h3>
+    <div class="sub">按岗位紧急度自动生成跟进节奏表（节点/动作/话术要点），紧急岗加密跟进、储备岗低频长线</div>
+    <button class="btn btn-accent" onclick="genFollowup()">📅 生成跟进节奏表</button>
+    <div id="followupOutput"></div>
+  </div>
+  <div class="card">
+    <h3>输出05-B · 异议处理话术库</h3>
+    <div class="sub">薪资、平台、稳定性、在职顾虑等常见异议的应对话术；可针对本项目自定义补充</div>
+    <div id="objectionList"></div>
+    <div class="hr"></div>
+    <div class="grid2">
+      <div><label>新增异议场景</label><input type="text" id="obj_q" placeholder="例：现在公司快上市，走不划算"></div>
+      <div><label>应对话术要点</label><input type="text" id="obj_a" placeholder="例：不否定他的判断，用期权兑现周期对比现金涨幅…"></div>
+    </div>
+    <button class="btn btn-primary" onclick="addObjection()">＋ 补充到异议库</button>
+  </div>
+</div>
+
+<!-- ============ P6 人才库CRM ============ -->
+<div class="panel" id="p6">
+  <div class="card">
+    <h3>落地配套02 · 人才库与CRM</h3>
+    <div class="sub">沉淀寻访过的人才、公司mapping、沟通记录、长尾复用；全部本地存储</div>
+    <div class="summary" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;" id="crmStats"></div>
+    <div style="overflow-x:auto;">
+      <table id="crmTable">
+        <thead><tr><th>人选</th><th>公司/职位</th><th>归属项目</th><th>阶段</th><th>最近沟通记录</th><th>操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="mt10">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ 导出人才库 CSV（本机文件）</button>
+      <button class="btn btn-danger btn-sm" onclick="clearCRM()">清空人才库</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ P7 话术库/合规/留痕 ============ -->
+<div class="panel" id="p7">
+  <div class="card">
+    <h3>落地配套04 · 话术库与效果沉淀</h3>
+    <div class="sub">按渠道沉淀话术版本，标记回复效果，按回复率持续优化迭代</div>
+    <div id="libList" class="muted">暂无存库话术。在「触达话术生成」页生成并存入。</div>
+  </div>
+  <div class="card">
+    <h3>落地配套03 · 合规与伦理清单 <span class="badge hi">每次寻访前过一遍</span></h3>
+    <div id="complianceList"></div>
+  </div>
+  <div class="card">
+    <h3>落地配套05 · 人工复核与留痕</h3>
+    <div class="sub">AI 出画像与话术，寻访顾问按判断调整；沟通记录可追溯。此处记录每次人工修订摘要（带时间戳）</div>
+    <textarea id="reviewNote" rows="3" placeholder="例：2026-10-15 将话术中的薪资写法从「12-18k」改为「12-18k+提成上不封顶」，避免误导"></textarea>
+    <button class="btn btn-primary" onclick="saveReviewNote()">＋ 记录本次复核留痕</button>
+    <div id="reviewLog"></div>
+  </div>
+</div>
+</main>
+
+<footer>
+  通用人才寻访智能体 · 场景3（画像与寻访话术搭建要素）本地实现 ｜ 数据全部保存在本机浏览器，不向任何第三方上传候选人隐私 ｜
+  合规红线：不诱导违约、不挖敏感核心岗、薪资信息真实、保护候选人隐私
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 基础工具 ================= */
+const $=id=>document.getElementById(id);
+const LS='talentSourcerV1';
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
+function copyText(id){const el=$(id);if(!el){toast('没有可复制内容');return;}const txt=el.value||el.innerText;if(!txt.trim()){toast('内容为空');return;}
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('已复制到剪贴板')).catch(()=>{el.select();document.execCommand('copy');toast('已复制');});}
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ================= 数据层 ================= */
+let DB={jobs:[],cur:-1,candidates:[],scripts:[],objections:[],reviews:[]};
+try{DB=Object.assign(DB,JSON.parse(localStorage.getItem(LS)||'{}'));}catch(e){}
+function save(){localStorage.setItem(LS,JSON.stringify(DB));}
+function cur(){return DB.jobs[DB.cur];}
+function blankJob(){return{id:Date.now(),name:'未命名寻访项目',title:'',level:'',portrait:'',hard:'',plus:'',companies:'',exclude:'',
+  mode:'proactive',urgency:'normal',salary:'',reason:'',poolExist:'',schools:'',networks:'',
+  status:['onboard_open','onboard_passive'],channels:['脉脉私信','猎聘沟通'],style:'pro',detail:'standard',multichannel:'yes'};}
+
+/* 状态/渠道复选 */
+const STATUS=[['active_looking','离职·看机会'],['onboard_open','在职·看机会'],['onboard_passive','在职·被动观望'],['onboard_closed','在职·暂不考虑']];
+const CHANNELS=['脉脉私信','猎聘沟通','电话','邮件','内推','社群/圈层'];
+function renderBoxes(){
+  const j=cur();if(!j)return;
+  $('statusBoxes').innerHTML=STATUS.map(([v,t])=>`<span class="chip" style="cursor:pointer;${j.status.includes(v)?'':'opacity:.4'}" onclick="toggleArr('status','${v}',this)">${t}</span>`).join('');
+  $('channelBoxes').innerHTML=CHANNELS.map(c=>`<span class="chip" style="cursor:pointer;${j.channels.includes(c)?'':'opacity:.4'}" onclick="toggleArr('channels','${c}',this)">${c}</span>`).join('');
+}
+function toggleArr(field,val,el){const j=cur();const i=j[field].indexOf(val);if(i>=0){j[field].splice(i,1);el.style.opacity=.4;}else{j[field].push(val);el.style.opacity=1;}}
+
+/* ================= 岗位项目 CRUD ================= */
+function renderJobSelect(){
+  $('jobSelect').innerHTML=DB.jobs.map((j,i)=>`<option value="${i}" ${i===DB.cur?'selected':''}>${esc(j.name)}</option>`).join('');
+}
+function switchJob(){DB.cur=+$('jobSelect').value;fillForm();renderBoxes();renderCandTable();renderTargetSelect();save();}
+function newJob(){DB.jobs.push(blankJob());DB.cur=DB.jobs.length-1;fillForm();renderBoxes();renderJobSelect();renderTargetSelect();save();toast('已新建寻访项目');}
+function deleteJob(){if(!cur())return;if(!confirm('确定删除当前寻访项目「'+cur().name+'」？'))return;DB.jobs.splice(DB.cur,1);DB.cur=0;fillForm();renderJobSelect();renderBoxes();renderTargetSelect();save();}
+function fillForm(){
+  const j=cur();if(!j){$('jobSelect').innerHTML='<option>—— 请先新建项目 ——</option>';return;}
+  $('j_title').value=j.title||'';$('j_level').value=j.level||'';$('j_portrait').value=j.portrait||'';
+  $('j_hard').value=j.hard||'';$('j_plus').value=j.plus||'';$('j_companies').value=j.companies||'';$('j_exclude').value=j.exclude||'';
+  $('j_mode').value=j.mode;$('j_urgency').value=j.urgency;$('j_salary').value=j.salary||'';$('j_reason').value=j.reason||'';
+  $('j_pool_exist').value=j.poolExist||'';$('j_schools').value=j.schools||'';$('j_networks').value=j.networks||'';
+  $('j_style').value=j.style;$('j_detail').value=j.detail;$('j_multichannel').value=j.multichannel;
+  $('jobSelect').value=DB.cur;
+  if(!j.name||j.name==='未命名寻访项目')j.name=(j.title||'未命名寻访项目');
+}
+function saveJob(){
+  const j=cur();if(!j)return;
+  j.title=$('j_title').value.trim();j.level=$('j_level').value.trim();j.portrait=$('j_portrait').value.trim();
+  j.hard=$('j_hard').value.trim();j.plus=$('j_plus').value.trim();j.companies=$('j_companies').value.trim();j.exclude=$('j_exclude').value.trim();
+  j.mode=$('j_mode').value;j.urgency=$('j_urgency').value;j.salary=$('j_salary').value.trim();j.reason=$('j_reason').value.trim();
+  j.poolExist=$('j_pool_exist').value.trim();j.schools=$('j_schools').value.trim();j.networks=$('j_networks').value.trim();
+  j.style=$('j_style').value;j.detail=$('j_detail').value;j.multichannel=$('j_multichannel').value;
+  j.name=j.title||j.name||'未命名寻访项目';
+  save();renderJobSelect();$('jobSelect').value=DB.cur;toast('✅ 已保存「'+j.name+'」');
+}
+function loadDemo(){
+  const j=blankJob();
+  Object.assign(j,{name:'示例：华中区农资大区销售经理',title:'区域销售经理（农资/农化）',level:'经理级，向大区总监汇报，带3-5人团队',
+    portrait:'负责华中区域农资产品渠道拓展，线下拜访县域经销商与农资店老板，促成产品铺货与复购，考核铺货率与回款率。',
+    hard:'3年以上渠道|大客户销售|B端销售经验\n农资|农化|化肥|种子|植保行业背景\n可适应长期出差|县域出差',
+    plus:'有县域经销商资源|客户资源可迁移\n带过|管理过团队\n农学|植保|植物保护相关专业',
+    companies:'某大型农化集团\n某crop保护头部企业\n同区域头部农资经销商',exclude:'频繁跳槽（平均在职<1年）\n仅快消经验无B端渠道\n竞业限制未到期的敏感岗位',
+    mode:'proactive',urgency:'high',salary:'12k-18k + 提成上不封顶',reason:'新开华中大区，编制1人，业务扩张新增',
+    poolExist:'人才库中有8位农化区域销售，去年接触过3位可复用',schools:'某农业大学·农学/植保专业',networks:'农资经销商社群、行业展会通讯录、老员工内推',
+    status:['onboard_open','onboard_passive'],channels:['脉脉私信','猎聘沟通','电话','内推'],style:'pro',detail:'standard',multichannel:'yes'});
+  DB.jobs.push(j);DB.cur=DB.jobs.length-1;
+  DB.candidates.push({id:Date.now()+1,name:'张先生',company:'某大型农化集团',role:'省区经理',status:'onboard_open',channel:'脉脉私信',intent:4,note:'6年农化渠道✓ 带过5人✓ 有县域资源✓',stage:'待触达',log:[],jobName:j.name});
+  fillForm();renderBoxes();renderJobSelect();renderCandTable();renderTargetSelect();renderCRM();save();toast('已载入示例项目「'+j.name+'」');
+}
+
+/* ================= 输出01 人才画像 ================= */
+const lines=s=>(s||'').split('\n').map(x=>x.trim()).filter(Boolean);
+function genPortrait(){
+  const j=cur();if(!j)return;
+  const hard=lines(j.hard),plus=lines(j.plus),ex=lines(j.exclude),com=lines(j.companies);
+  if(!j.title||!hard.length){$('portraitWarn').classList.add('show');$('portraitOutput').innerHTML='';return;}
+  $('portraitWarn').classList.remove('show');
+  const soft=softTraits(j);
+  const html=`
+  <div class="portrait-block"><h4>🎯 一句话画像</h4><div style="font-size:13.5px;line-height:1.8;">${esc(oneLine(j))}</div></div>
+  <div class="portrait-block" style="border-left-color:var(--red);"><h4>① 硬条件（必须满足）</h4>
+    <div class="chips">${hard.map(h=>`<span class="chip">${esc(h)}</span>`).join('')||'<span class="muted">未配置</span>'}</div></div>
+  <div class="portrait-block" style="border-left-color:var(--accent);"><h4>② 软特征（动机 / 文化匹配）</h4>
+    <div class="chips">${soft.map(s=>`<span class="chip soft">${esc(s)}</span>`).join('')}</div>
+    <div class="muted" style="margin-top:6px;">软特征不作为否决项，用于首触话术切入与面试深挖方向。</div></div>
+  <div class="portrait-block" style="border-left-color:var(--green);"><h4>③ 加分信号（优先接触）</h4>
+    <div class="chips">${plus.map(p=>`<span class="chip plus">${esc(p)}</span>`).join('')||'<span class="muted">未配置</span>'}</div></div>
+  <div class="portrait-block" style="border-left-color:var(--muted);"><h4>④ 排除项（一票否决 / 主动排除）</h4>
+    <div class="chips">${ex.map(e=>`<span class="chip exclude">${esc(e)}</span>`).join('')||'<span class="muted">未配置</span>'}</div></div>
+  <div class="portrait-block" style="border-left-color:var(--blue);"><h4>⑤ 定向寻访目标池</h4>
+    <div class="muted" style="line-height:1.9;">目标公司/竞对：${com.map(esc).join('；')||'未配置'}<br>目标院校来源：${esc(j.schools)||'未配置'}<br>人脉圈层：${esc(j.networks)||'未配置'}<br>人才库复用：${esc(j.poolExist)||'无'}</div></div>
+  <div class="portrait-block" style="border-left-color:var(--amber);"><h4>⑥ 寻访策略摘要</h4>
+    <div class="muted" style="line-height:1.9;">寻访模式：${j.mode==='proactive'?'主动定向挖掘（从目标公司逐个映射候选人）':'被动接递补（激活人才库长尾 + 等投递筛选）'}　
+    紧急度：${{high:'🔥紧急——两周内需锁定到面人选，建议多渠道并发、每天刷新触达',normal:'正常——按标准节奏推进',low:'宽松——低频长线维护，优先人才池复用'}[j.urgency]||'正常'}<br>
+    薪资预算：${esc(j.salary)||'未填写'}　汇报线：${esc(j.level)||'未填写'}</div></div>`;
+  $('portraitOutput').innerHTML=html;
+  j._portraitText=oneLine(j)+'\n\n【硬条件】\n'+hard.map(h=>'· '+h).join('\n')+'\n\n【软特征】\n'+soft.map(h=>'· '+h).join('\n')+'\n\n【加分信号】\n'+plus.map(h=>'· '+h).join('\n')+'\n\n【排除项】\n'+ex.map(h=>'· '+h).join('\n');
+  save();
+}
+function oneLine(j){
+  const hard=lines(j.hard);
+  const hardBrief=hard.slice(0,2).map(h=>h.split('|')[0]).join('、');
+  return `一位${j.level?j.level.split('，')[0]:''}的「${j.title||'目标岗位'}」候选人：具备${hardBrief}等硬条件，动机上认同${(j.portrait||'该岗位业务价值').slice(0,30)}…的方向，且无「${lines(j.exclude)[0]||'—'}」等排除情形。`;
+}
+function softTraits(j){
+  const arr=[];const p=j.portrait||'';
+  if(/出差|驻点|外派|县域|线下/.test(p+j.hard))arr.push('能接受较高出差强度，家庭支持度高');
+  if(/带|团队|管理/.test(j.level||'')||lines(j.plus).some(x=>/带|团队|管理/.test(x)))arr.push('有带团队意愿或已具备管理心智');
+  if(/农资|经销商|渠道/.test(p))arr.push('认同「服务农资店老板/县域客户」的业务价值，能下沉能吃苦');
+  if(/提成|绩效|考核|回款/.test(p+j.reason))arr.push('结果导向，接受与业绩强挂钩的薪酬结构');
+  arr.push(j.style==='pro'?'沟通风格偏商务直接，重数据与结果':'沟通亲和，重关系与信任积累');
+  return arr;
+}
+function importUpstream(){
+  const txt=$('upstreamPaste').value.trim();if(!txt){toast('请先粘贴内容');return;}
+  let hard=[],plus=[],ex=[];
+  // 尝试 JSON
+  try{const o=JSON.parse(txt);
+    hard=lines(Array.isArray(o.hard)?o.hard.join('\n'):(o.hard||''));
+    plus=lines(Array.isArray(o.plus)?o.plus.join('\n'):(o.plus||''));
+    ex=lines(Array.isArray(o.exclude)?o.exclude.join('\n'):(o.exclude||''));
+    if(o.title)$('j_title').value=o.title;if(o.portrait)$('j_portrait').value=o.portrait;
+  }catch(e){
+    const inHard=txt.split(/\n+/);let cur2=null;
+    inHard.forEach(l=>{const t=l.trim();
+      if(/^(必备|硬性|硬条件|必须)/.test(t))cur2='h';
+      else if(/^(优先|加分|软性)/.test(t))cur2='p';
+      else if(/^(排除|否决|不要)/.test(t))cur2='e';
+      else if(t){(cur2==='p'?plus:cur2==='e'?ex:hard).push(t.replace(/^[-·•\d.、\s]+/,''));}});
+    if(!hard.length&&!plus.length&&!ex.length){hard=inHard.map(l=>l.replace(/^[-·•\d.、\s]+/,'').trim()).filter(Boolean);}
+  }
+  const j=cur();j.hard=[...new Set([...lines(j.hard),...hard])].join('\n');
+  j.plus=[...new Set([...lines(j.plus),...plus])].join('\n');
+  j.exclude=[...new Set([...lines(j.exclude),...ex])].join('\n');
+  if($('j_title').value)j.title=$('j_title').value;if($('j_portrait').value)j.portrait=$('j_portrait').value;
+  fillForm();save();$('upstreamOk').classList.add('show');toast('已回填，请到「寻访需求」页核对保存');
+}
+
+/* ================= 输出02 关键词与渠道 ================= */
+function genKeywords(){
+  const j=cur();if(!j)return;
+  const hard=lines(j.hard).map(h=>h.split('|')[0].trim()).filter(Boolean);
+  const com=lines(j.companies);
+  const core=hard.slice(0,3);
+  const kwFor=(site)=>{
+    let s=core.join(' + ');
+    if(site==='领英')s=core.join(' AND ');
+    if(com.length)s+=`\n定向公司搜索：${com.map(c=>`「${c}」+ ${core[0]||'岗位关键词'}`).join('；')}`;
+    return s;
+  };
+  const chPlan=j.channels.map(c=>{
+    const tip={ '脉脉私信':'同行聚集度高，适合做公司mapping与被动候选人破冰；先互动（点赞/评论其动态）再私信，回复率更高。',
+      '猎聘沟通':'看机会候选人浓度最高，适合优先筛「离职/在职看机会」人群；用平台标准招呼语+个性化第一句。',
+      '电话':'紧急岗位首选，直接确认意愿；开场15秒说清「是谁+为什么找你+对他好处」。',
+      '邮件':'适合职级高、正式感强的人选；标题带岗位亮点，正文三段式。',
+      '内推':'可信度最高、转化最快；给内推人一段「可直接转发的人选画像+岗位一页纸」。',
+      '社群/圈层':'行业群/展会人脉，适合长期混脸熟；先发行业干货再软性带岗位。'}[c]||'';
+    return `<div class="portrait-block" style="border-left-color:var(--accent);"><h4>📡 ${esc(c)}</h4><div class="muted" style="line-height:1.8;">${esc(tip)}</div></div>`;
+  }).join('');
+  $('keywordOutput').innerHTML=`
+    <div class="grid2">
+      <div><label>脉脉/猎聘 搜索式（空格=与）</label><div class="kw-box">${esc(kwFor('脉脉'))}</div><button class="btn btn-ghost btn-sm" onclick="copyKw(0)">复制</button></div>
+      <div><label>领英 搜索式（AND 语法）</label><div class="kw-box">${esc(kwFor('领英'))}</div><button class="btn btn-ghost btn-sm" onclick="copyKw(1)">复制</button></div>
+    </div>
+    ${j.channels.length?chPlan:'<div class="warn show">尚未在输入层04勾选可用渠道。</div>'}`;
+  j._kw=[kwFor('脉脉'),kwFor('领英')];save();
+}
+function copyKw(i){const t=cur()._kw?.[i]||'';if(!t){toast('请先生成关键词');return;}
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('已复制')).catch(()=>toast('复制失败，请手动选择'));}
+
+/* ================= 寻访名单 ================= */
+function prio(c){
+  const sMap={active_looking:40,onboard_open:35,onboard_passive:20,onboard_closed:5};
+  let p=sMap[c.status]+(+c.intent)*6;
+  if(cur()&&cur().mode==='proactive'&&(c.channel==='内推'||c.channel==='社群/圈层'))p+=8;
+  if(cur()&&cur().urgency==='high'&&c.status==='active_looking')p+=5;
+  return p;
+}
+function addCandidate(){
+  const name=$('c_name').value.trim();if(!name){toast('请填姓名/代号');return;}
+  const j=cur();const c={id:Date.now(),name,company:$('c_company').value.trim(),role:$('c_role').value.trim(),
+    status:$('c_status').value,channel:$('c_channel').value,intent:+$('c_intent').value,note:$('c_note').value.trim(),
+    stage:'待触达',log:[],jobName:j?j.name:''};
+  DB.candidates.push(c);save();renderCandTable();renderTargetSelect();renderCRM();
+  $('c_name').value=$('c_company').value=$('c_role').value=$('c_note').value='';toast('已加入寻访名单');
+}
+const STATUS_TXT={active_looking:'离职·看机会',onboard_open:'在职·看机会',onboard_passive:'在职·观望',onboard_closed:'在职·暂不考虑'};
+function renderCandTable(){
+  const rows=[...DB.candidates].sort((a,b)=>prio(b)-prio(a)).map(c=>{
+    const p=prio(c);const cls=p>=62?'hi':p>=44?'mid':'lo';
+    return `<tr><td><span class="badge ${cls}">P${p>=62?'1':p>=44?'2':'3'} · ${p}分</span></td>
+    <td><b>${esc(c.name)}</b></td><td>${esc(c.company)}<br><span class="muted">${esc(c.role)}</span></td>
+    <td>${STATUS_TXT[c.status]}</td><td>${esc(c.channel)}</td><td>${'★'.repeat(c.intent)}</td>
+    <td style="max-width:220px;">${esc(c.note)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="delCand(${c.id})">移除</button></td></tr>`;}).join('');
+  $('candTable').querySelector('tbody').innerHTML=rows||'<tr><td colspan="8" class="muted">暂无人选，登记后自动按优先级排序。</td></tr>';
+}
+function delCand(id){DB.candidates=DB.candidates.filter(c=>c.id!==id);save();renderCandTable();renderTargetSelect();renderCRM();}
+/* ================= 模拟20份候选人（演练） ================= */
+const MOCK20=[
+  ['张建国','某大型农化集团','省区销售经理','onboard_open','脉脉私信',5,'6年农化渠道✓ 带过5人团队✓ 有县域经销商资源✓'],
+  ['李伟','某crop保护头部企业','大客户销售','onboard_open','猎聘沟通',4,'5年B端大客户✓ 农化背景✓ 可出差✓'],
+  ['王强','同区域头部农资经销商','渠道总监','active_looking','内推',5,'8年农资渠道✓ 自带客户资源✓ 正在看机会✓'],
+  ['刘洋','某上市农化公司','区域经理','onboard_passive','脉脉私信',3,'4年销售✓ 农资背景✓ 未带团队'],
+  ['陈晓东','某省农资连锁','门店拓展经理','onboard_open','电话',4,'3年渠道✓ 县域开店✓ 农学大专✓'],
+  ['赵磊','某大型农化集团','客户经理','onboard_passive','社群/圈层',2,'3年客户✓ 农化背景✓ 家庭原因不太想动'],
+  ['孙明','某农资电商','BD经理','active_looking','猎聘沟通',5,'5年B端✓ 农资线上+线下✓ 想回线下大客户'],
+  ['周涛','某crop保护头部企业','技术销售','onboard_open','脉脉私信',4,'植保专业✓ 4年技术销售✓ 可出差✓'],
+  ['吴昊','某上市农化公司','销售主管','onboard_passive','内推',3,'带过3人✓ 农资✓ 涨薪期望高'],
+  ['郑凯','某省农资连锁','区域代表','onboard_open','电话',4,'4年渠道✓ 熟悉县域网点✓ 可长差✓'],
+  ['冯磊','某快消区域','大区销售','onboard_passive','脉脉私信',2,'6年快消大客户✗ 无农化B端背景（需评估）'],
+  ['蒋勇','某大型农化集团','省区经理','onboard_open','猎聘沟通',5,'7年农化✓ 管8人✓ 有竞对渠道资源✓'],
+  ['韩雪','某农资电商','运营销售','active_looking','社群/圈层',4,'3年农资线上✓ 想转线下渠道✓'],
+  ['杨帆','同区域头部农资经销商','销售副总','onboard_closed','内推',2,'10年农资✓ 高管✗ 暂不考虑（保留关系）'],
+  ['朱琳','某crop保护头部企业','市场代表','onboard_open','脉脉私信',3,'3年市场✓ 农化✓ 想转销售岗'],
+  ['秦风','某上市农化公司','大客户总监','onboard_passive','电话',3,'管10人✓ 农化大客户✓ 跳槽谨慎'],
+  ['许强','某大型农化集团','渠道经理','onboard_open','猎聘沟通',4,'5年渠道✓ 农资✓ 带过6人✓'],
+  ['何军','某省农资连锁','乡镇业务','onboard_passive','社群/圈层',2,'2年✗ 经验偏浅✗ 但本地人脉熟'],
+  ['邓超','某农资电商','行业顾问','active_looking','脉脉私信',4,'5年农资✓ 懂作物方案✓ 想做区域操盘'],
+  ['曹阳','某crop保护头部企业','销售工程师','onboard_open','内推',5,'植保本科✓ 4年农化✓ 可长期出差✓']];
+function sim20(){
+  if(!DB.candidates.length || confirm('已有人选。选择"确定"将追加20份模拟候选人到当前项目（推荐先新建一个演练项目）。')){
+    const j=cur();
+    if(j && !j.title){ // 空白项目先注入示例岗位画像，保证画像/关键词有骨架
+      Object.assign(j,{name:'示例：华中区农资大区销售经理',title:'区域销售经理（农资/农化）',level:'经理级，向大区总监汇报，带3-5人团队',
+        portrait:'负责华中区域农资产品渠道拓展，线下拜访县域经销商与农资店老板，促成产品铺货与复购，考核铺货率与回款率。',
+        hard:'3年以上渠道|大客户销售|B端销售经验\n农资|农化|化肥|种子|植保行业背景\n可适应长期出差|县域出差',
+        plus:'有县域经销商资源|客户资源可迁移\n带过|管理过团队\n农学|植保|植物保护相关专业',
+        companies:'某大型农化集团\n某crop保护头部企业\n同区域头部农资经销商',exclude:'频繁跳槽（平均在职<1年）\n仅快消经验无B端渠道\n竞业限制未到期的敏感岗位',
+        mode:'proactive',urgency:'high',salary:'12k-18k + 提成上不封顶',reason:'新开华中大区，编制1人，业务扩张新增',
+        poolExist:'人才库中有8位农化区域销售，去年接触过3位可复用',schools:'某农业大学·农学/植保专业',networks:'农资经销商社群、行业展会通讯录、老员工内推',
+        status:['onboard_open','onboard_passive'],channels:['脉脉私信','猎聘沟通','电话','内推'],style:'pro',detail:'standard',multichannel:'yes'});
+      save();fillForm();renderJobSelect();renderBoxes();
+    }
+    const jn=j?j.name:'演练项目';
+    MOCK20.forEach((r,i)=>{DB.candidates.push({id:Date.now()+i,name:r[0],company:r[1],role:r[2],status:r[3],channel:r[4],intent:r[5],note:r[6],stage:'待触达',log:[],jobName:jn});});
+    save();renderCandTable();renderTargetSelect();renderCRM();
+    // 顺带把画像/关键词/跟进也跑出来
+    try{genPortrait();genKeywords();genFollowup();}catch(e){}
+    document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    document.querySelector('#nav button[data-p="p3"]').classList.add('active');$('p3').classList.add('active');
+    toast('已模拟20份候选人并生成画像/渠道/跟进');
+  }
+}
+function renderTargetSelect(){
+  const sel=$('scriptTarget');const v=sel.value;
+  sel.innerHTML='<option value="">—— 通用版本 ——</option>'+[...DB.candidates].sort((a,b)=>prio(b)-prio(a)).map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(c.company)}·${STATUS_TXT[c.status]}）</option>`).join('');
+  if(v)sel.value=v;
+}
+
+/* ================= 输出03/04 话术 ================= */
+let curChannel='脉脉私信';
+document.querySelectorAll('#scriptTabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#scriptTabs button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');curChannel=b.dataset.ch;});
+function genScript(){
+  const j=cur();if(!j){toast('请先新建项目');return;}
+  const cand=DB.candidates.find(c=>c.id===$('scriptTarget').value);
+  const hookCustom=$('scriptHook').value.trim();
+  const detLen={short:150,standard:250,full:400}[j.detail];
+  const hard=lines(j.hard).map(h=>h.split('|')[0]).slice(0,2);
+  const plus=lines(j.plus)[0]||'';
+  const hooks=[
+    `${(j.title||'该岗位').replace(/（.*?）/,'')}，${j.salary?'薪资'+j.salary:'薪资有竞争力'}，${hookCustom|| (plus?plus.split('|')[0]:'平台正扩张、机会空间大')}`,
+    `岗位核心是：${(j.portrait||'').slice(0,40)||'业务拓展'}…`,
+    `${j.level?'汇报线清晰（'+j.level.split('，')[0]+'），':''}新业务/新区域从0搭建，空间给足`];
+  const hook=hookCustom||hooks[0];
+  const greet=cand?(j.style==='pro'?`${cand.name}您好，我是${'XX公司'}招聘负责人`:`${cand.name}总您好，冒昧打扰~`):(j.style==='pro'?'您好，我是XX公司招聘负责人':'您好，冒昧打扰~');
+  let body='';
+  if(curChannel==='电话开场白'){
+    body=`【开场15秒】\n${greet}。看到您在${cand?cand.company:'行业内头部公司'}做${cand?cand.role:'相关岗位'}，我们这边在招「${j.title}」，${hook}，想用一分钟跟您简单同步下，您现在方便吗？\n\n【若"方便"】\n① 我是谁：${j.reason||'业务扩张'}，直接跟业务负责人对接，流程快。\n② 为什么找您：您在${cand?'您现在':'目前'}岗位积累的${hard.join('、')||'相关经验'}跟我们非常匹配${cand&&cand.note?'（' + cand.note.split('，')[0] + '）':''}。\n③ 对您的好处：${hook}。\n【收尾】我加您个微信，把岗位一页纸发您，您先看看，不合适就当交个朋友，好吗？`;
+  }else if(curChannel==='邮件版'){
+    body=`标题：${j.title}｜${j.salary||'薪酬有竞争力'}｜${(hook||'机会推荐').slice(0,18)}\n\n${greet}：\n\n冒昧来信。关注到您在${(cand?cand.company:'行业')}${cand&&cand.role?'的'+cand.role+'经历':''}，与我们正在寻找的人选高度契合，冒昧推荐一个机会：\n\n■ 岗位：${j.title}${j.level?'（'+j.level+'）':''}\n■ 核心内容：${(j.portrait||'').slice(0,80)}\n■ 我们看重：${hard.join('、')}${plus?'；加分项——'+plus:''}\n■ 薪酬：${j.salary||'面议'}\n■ 为什么值得看：${hook}\n\n如暂无意向，也欢迎保持联系（行业里抬头不见低头见）。回复本邮件或回电均可，我可将岗位一页纸发您参考。\n\n祝好！\nXX公司 · 招聘负责人`;
+  }else if(curChannel==='内推/圈层引荐'){
+    body=`【给内推人的转发言】麻烦哥/姐帮忙留意或转发——\n我们在找「${j.title}」：${hard.join('、')||'相关经验'}，${j.salary?'薪资'+j.salary:''}，${hook}。\n如果您身边有合适的朋友（${STATUS_TXT[cand?cand.status:'onboard_open']}的最好），把简历推我即可，成必有谢。也欢迎直接把对方微信推给我，我来跟进。\n\n【给被引荐人的开场】${greet}，是${'XX'}引荐的~我们在做「${j.title}」，${hook}，跟您背景挺搭，方便聊聊吗？`;
+  }else{ // 脉脉/猎聘 私信
+    body=`${greet}。关注到您${cand?`在${cand.company}做${cand.role}`:'在行业里的经历'}，我们在找「${j.title}」，核心看中${hard.join('、')||'您的相关经验'}。机会亮点：${hook}。${j.detail!=='short'?`\n岗位情况：${(j.portrait||'').slice(0,60)}…`:''}\n${cand&&cand.status==='onboard_passive'?'不确定您是否在看机会——不强求，先交个朋友，机会信息放着您随时翻。':'方便的话聊两句？不合适也没关系，就当多个同行朋友。'}`;
+  }
+  // 完整度裁剪：简短版去掉第二段
+  if(j.detail==='short'&&curChannel!=='电话开场白'){body=body.split('\n').slice(0,3).join('\n')+'\n（简短版，可让我展开）';}
+  const disclaim=`\n\n——合规自查：未承诺不确定信息；薪资表述「${j.salary||'面议'}」真实；未诱导违约；对方暂不考虑即止。`;
+  $('scriptOutput').value=body+disclaim;
+}
+function saveScriptToLib(){
+  const txt=$('scriptOutput').value.trim();if(!txt){toast('请先生成话术');return;}
+  const j=cur();
+  DB.scripts.unshift({id:Date.now(),channel:curChannel,job:j?j.name:'',text:txt,note:'',effect:'待观察',time:new Date().toLocaleString('zh-CN')});
+  save();renderLib();$('scriptSavedOk').classList.add('show');setTimeout(()=>$('scriptSavedOk').classList.remove('show'),2500);
+  toast('已存入话术库');
+}
+
+/* ================= 输出05 跟进与异议 ================= */
+function genFollowup(){
+  const j=cur();if(!j)return;
+  const plans={
+    high:[['D+0','首触（按渠道话术）','说清是谁+为什么找您+对您好处，15秒内'],
+      ['D+1','跟进一次','发岗位一页纸+公司亮点，降低决策成本'],
+      ['D+3','换渠道再触','私信未回→电话；电话未接→短信留亮点'],
+      ['D+7','价值触达','发行业/薪酬报告等对人有用的内容，不催'],
+      ['D+10','意愿确认','直接问：最近一周方便约20分钟电话吗？'],
+      ['D+14','收尾铺垫','「先不占用您时间，机会长期有效，随时找我」']],
+    normal:[['D+0','首触'],['D+3','跟进：岗位一页纸'],['D+7','换渠道再触'],['D+14','价值触达：行业内容'],['D+21','意愿确认与收尾']],
+    low:[['D+0','首触'],['D+7','跟进'],['D+30','月度价值触达（行业动态）'],['D+60','季度性重新激活']]};
+  const rows=plans[j.urgency].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="muted">${r[2]||''}</td></tr>`).join('');
+  $('followupOutput').innerHTML=`<table><thead><tr><th>节点</th><th>动作</th><th>要点</th></tr></thead><tbody>${rows}</tbody></table>
+  <div class="muted mt10">节奏基于紧急度「${{high:'紧急',normal:'正常',low:'宽松'}[j.urgency]}」自动生成；同一候选人同一渠道连续触达不超过2次未回即换渠道，避免骚扰。</div>`;
+}
+const OBJ_DEFAULT=[
+  {q:'「现在不打算动，先看看吧」',a:'不催决策：「完全理解，机会信息先放您这，什么时候想聊随时找我。」+ 留一个钩子（岗位一页纸/薪酬报告），把强推销变成弱打扰。'},
+  {q:'「薪资达不到我预期」',a:'先问期望与构成（底薪/提成/年终），再拆总包对比：base 可谈但提成上不封顶/福利/稳定性；差距过大如实说，不画饼，标注到CRM备 later 复用。'},
+  {q:'「新平台稳不稳定？」',a:'给事实而非承诺：融资/业务数据/团队规模/老板背景；邀请先跟业务负责人聊一次再判断，降低首次接触的心理门槛。'},
+  {q:'「跳槽频繁会不会不好？」（对方顾虑自己的稳定性）',a:'换框架：聊「这个岗位为什么值得干3年」——空间、汇报线、授权范围；不给空头支票。'},
+  {q:'「现在项目关键期，走不了」',a:'尊重职业操守（这本身就是好信号）：聊远期时间表，约定节点回访并写入CRM跟进计划。'},
+  {q:'「有竞业限制」',a:'只做合规动作：了解限制范围/期限/补偿情况，涉及敏感同业岗位直接停触达并留痕，不提供任何规避建议。'}];
+function renderObjections(){
+  const list=[...OBJ_DEFAULT,...DB.objections];
+  $('objectionList').innerHTML=list.map(o=>`<div class="portrait-block" style="border-left-color:var(--amber);"><h4>❓ ${esc(o.q)}</h4><div style="font-size:12.5px;line-height:1.8;">${esc(o.a)}</div></div>`).join('');
+}
+function addObjection(){
+  const q=$('obj_q').value.trim(),a=$('obj_a').value.trim();
+  if(!q||!a){toast('请填写异议场景与应对要点');return;}
+  DB.objections.push({q,a});save();renderObjections();$('obj_q').value=$('obj_a').value='';toast('已补充到异议库');
+}
+
+/* ================= P6 CRM ================= */
+const STAGES=['待触达','已触达','已回复','沟通中','已推荐','暂缓/长尾'];
+function renderCRM(){
+  const cs=DB.candidates;
+  const stat={};STAGES.forEach(s=>stat[s]=0);cs.forEach(c=>stat[c.stage]=(stat[c.stage]||0)+1);
+  $('crmStats').innerHTML=`<div class="stat sT"><b>${cs.length}</b><span>人才库总量</span></div>`+
+    STAGES.map(s=>`<div class="stat"><b>${stat[s]}</b><span>${s}</span></div>`).join('');
+  $('crmTable').querySelector('tbody').innerHTML=cs.map(c=>`
+    <tr><td><b>${esc(c.name)}</b></td><td>${esc(c.company)}<br><span class="muted">${esc(c.role)}</span></td>
+    <td class="muted">${esc(c.jobName||'—')}</td>
+    <td><select class="status-select" onchange="setStage(${c.id},this.value)">${STAGES.map(s=>`<option ${s===c.stage?'selected':''}>${s}</option>`).join('')}</select></td>
+    <td style="max-width:260px;"><div class="muted">${c.log.length?'最近：'+esc(c.log[c.log.length-1]):'暂无沟通记录'}</div></td>
+    <td><button class="btn btn-ghost btn-sm" onclick="addLog(${c.id})">＋沟通记录</button></td></tr>`).join('')||'<tr><td colspan="6" class="muted">人才库为空。</td></tr>';
+}
+function setStage(id,v){const c=DB.candidates.find(x=>x.id===id);if(c){c.stage=v;save();renderCRM();}}
+function addLog(id){
+  const c=DB.candidates.find(x=>x.id===id);if(!c)return;
+  const t=prompt(`为「${c.name}」添加沟通记录（时间自动记录）：`);if(!t)return;
+  c.log.push(`${new Date().toLocaleString('zh-CN')} ${t}`);save();renderCRM();toast('已记录');
+}
+function exportCSV(){
+  if(!DB.candidates.length){toast('人才库为空');return;}
+  const head='姓名,公司,职位,在职状态,渠道,意愿,阶段,项目,匹配备注,最近沟通\n';
+  const rows=DB.candidates.map(c=>[c.name,c.company,c.role,STATUS_TXT[c.status],c.channel,'★'.repeat(c.intent),c.stage,c.jobName,c.note,(c.log[c.log.length-1]||'')].map(x=>`"${(x||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+head+rows],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='人才库_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  toast('已导出到本机下载目录');
+}
+function clearCRM(){if(!confirm('确定清空人才库全部人选与沟通记录？此操作不可恢复（建议先导出CSV备份）。'))return;DB.candidates=[];save();renderCRM();renderCandTable();renderTargetSelect();}
+
+/* ================= P7 话术库/合规/留痕 ================= */
+function renderLib(){
+  $('libList').innerHTML=DB.scripts.length?DB.scripts.map(s=>`
+    <div class="portrait-block" style="border-left-color:var(--blue);">
+      <h4>💬 ${esc(s.channel)} · ${esc(s.job)} <span class="badge ${s.effect==='回复率高'?'hi':s.effect==='有回复'?'blue':'gray'}">${esc(s.effect)}</span> <span class="muted" style="font-weight:normal;">${esc(s.time)}</span></h4>
+      <div style="font-size:12.5px;line-height:1.8;white-space:pre-wrap;max-height:130px;overflow:hidden;">${esc(s.text)}</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <select class="status-select" onchange="setEffect(${s.id},this.value)">
+          ${['待观察','有回复','回复率高','无回复'].map(e=>`<option ${e===s.effect?'selected':''}>${e}</option>`).join('')}</select>
+        <input class="mini-input" style="flex:1;min-width:160px;" placeholder="迭代备注（如：去掉称呼后回复率更高）" value="${esc(s.note)}" onchange="setNote(${s.id},this.value)">
+        <button class="btn btn-danger btn-sm" onclick="delScript(${s.id})">删除</button>
+      </div></div>`).join(''):'<div class="muted">暂无存库话术。在「触达话术生成」页生成并存入。</div>';
+}
+function setEffect(id,v){const s=DB.scripts.find(x=>x.id===id);if(s){s.effect=v;save();renderLib();}}
+function setNote(id,v){const s=DB.scripts.find(x=>x.id===id);if(s){s.note=v;save();}}
+function delScript(id){DB.scripts=DB.scripts.filter(s=>s.id!==id);save();renderLib();}
+const COMPLIANCE=['不诱导违约：不劝在职能候选人提前离职、不协助规避竞业协议',
+ '不挖敏感核心岗：涉密/核心技术、监管限制岗位主动停触达并留痕',
+ '薪资信息真实：话术中的薪资、提成、福利与实际offer口径一致，不画饼',
+ '保护候选人隐私：简历与联系方式仅存本机，不向第三方上传、不群卖名单',
+ '触达有度：同候选人同渠道连续2次未回即换渠道/暂停，避免骚扰',
+ 'AI输出必须人工复核：画像与话术发出前经寻访顾问确认调整，记录留痕'];
+function renderCompliance(){
+  const key=LS+'_compliance';const saved=JSON.parse(localStorage.getItem(key)||'[]');
+  $('complianceList').innerHTML=COMPLIANCE.map((c,i)=>`<div class="check-item"><input type="checkbox" ${saved[i]?'checked':''} onchange="toggleComp(${i},this)"><span>${esc(c)}</span></div>`).join('');
+}
+function toggleComp(i,el){const key=LS+'_compliance';const s=JSON.parse(localStorage.getItem(key)||'[]');s[i]=el.checked;localStorage.setItem(key,JSON.stringify(s));}
+function saveReviewNote(){
+  const t=$('reviewNote').value.trim();if(!t){toast('请填写复核内容');return;}
+  DB.reviews.unshift(`【${new Date().toLocaleString('zh-CN')}】${t}`);save();renderReviews();$('reviewNote').value='';toast('留痕已记录');
+}
+function renderReviews(){
+  $('reviewLog').innerHTML=DB.reviews.length?`<div class="hr"></div>`+DB.reviews.map(r=>`<div style="font-size:12.5px;padding:7px 0;border-bottom:1px dashed var(--border);">${esc(r)}</div>`).join(''):'';
+}
+
+/* ================= 导航 ================= */
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');$(b.dataset.p).classList.add('active');
+});
+
+/* ================= 初始化 ================= */
+if(!DB.jobs.length){DB.jobs.push(blankJob());DB.cur=0;}
+fillForm();renderBoxes();renderJobSelect();renderCandTable();renderTargetSelect();renderCRM();renderObjections();renderLib();renderCompliance();renderReviews();
+</script>
+</body>
+</html>
