@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通用AI生成面试题智能体</title>
+<style>
+:root{
+  --primary:#1a3a6b; --primary-light:#eef3fb; --accent:#d9822b; --accent-light:#fdf3e7;
+  --bg:#f5f7fa; --card:#ffffff; --border:#e2e8f0; --text:#1f2937; --muted:#6b7280;
+  --green:#16a34a; --green-light:#ecfdf3; --red:#dc2626; --red-light:#fef2f2;
+  --amber:#d97706; --amber-light:#fffbeb; --blue:#2563eb; --blue-light:#eff6ff;
+  --violet:#7c3aed; --violet-light:#f5f3ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+header{background:linear-gradient(135deg,#122a52,#1a3a6b 60%,#245092);color:#fff;padding:22px 32px;}
+header h1{font-size:22px;letter-spacing:1px;}
+header p{margin-top:6px;font-size:12.5px;opacity:.85;}
+.layer-tags{display:inline-flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.layer-tags span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);padding:3px 12px;border-radius:12px;font-size:12px;}
+nav{display:flex;gap:4px;background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:20;overflow-x:auto;}
+nav button{border:none;background:none;padding:13px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;}
+nav button.active{color:var(--primary);border-bottom-color:var(--accent);font-weight:bold;}
+nav button:hover{color:var(--primary);}
+main{max-width:1180px;margin:0 auto;padding:22px 24px 60px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.card h3{font-size:15px;color:var(--primary);margin-bottom:4px;}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+label{display:block;font-size:12.5px;font-weight:bold;color:#374151;margin:10px 0 4px;}
+label .tip{font-weight:normal;color:var(--muted);font-size:11.5px;}
+textarea,input[type=text],input[type=number],select{width:100%;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fbfcfe;resize:vertical;}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,58,107,.1);}
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;margin:4px 4px 0 0;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:#245092;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-accent:hover{background:#c06f1e;}
+.btn-ghost{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+.btn-ghost:hover{background:var(--primary-light);}
+.btn-danger{background:#fff;color:var(--red);border:1px solid var(--red);}
+.btn-sm{padding:4px 10px;font-size:12px;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:bold;}
+.badge.hi{background:var(--green-light);color:var(--green);border:1px solid #a7f3c9;}
+.badge.mid{background:var(--amber-light);color:var(--amber);border:1px solid #fcd34d;}
+.badge.lo{background:var(--red-light);color:var(--red);border:1px solid #fca5a5;}
+.badge.gray{background:#f3f4f6;color:var(--muted);}
+.badge.blue{background:var(--blue-light);color:var(--blue);}
+.badge.violet{background:var(--violet-light);color:var(--violet);}
+.warn{background:var(--amber-light);border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.warn.show{display:block;}
+.ok{background:var(--green-light);border:1px solid #a7f3c9;color:#166534;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.ok.show{display:block;}
+.block{border:1px solid var(--border);border-left:5px solid var(--primary);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fff;}
+.block h4{font-size:13.5px;color:var(--primary);margin-bottom:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{font-size:11.5px;padding:2px 9px;border-radius:10px;background:var(--primary-light);color:var(--primary);cursor:pointer;}
+.chip.exclude{background:var(--red-light);color:var(--red);}
+.chip.plus{background:var(--green-light);color:var(--green);}
+.chip.soft{background:var(--accent-light);color:#92400e;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:var(--primary-light);color:var(--primary);text-align:left;padding:8px 10px;font-weight:bold;}
+td{border-top:1px solid var(--border);padding:8px 10px;vertical-align:top;}
+tr:hover td{background:#fafbfd;}
+.dim-block{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;background:#fff;border-top:4px solid var(--primary);}
+.dim-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.dim-head h4{font-size:14.5px;color:var(--primary);}
+.q-item{border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#fff;}
+.q-item .qt{font-size:13.5px;line-height:1.8;}
+.q-num{display:inline-block;background:var(--primary);color:#fff;border-radius:5px;padding:1px 7px;font-size:11.5px;margin-right:7px;font-weight:bold;vertical-align:1px;}
+.q-meta{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0 0;}
+.probe{background:#f8fafc;border-left:3px solid var(--accent);padding:7px 11px;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.85;margin-top:8px;}
+.anchor{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;}
+.anchor div{border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.7;}
+.anchor .a-good{background:var(--green-light);border:1px solid #a7f3c9;}
+.anchor .a-ok{background:var(--amber-light);border:1px solid #fcd34d;}
+.anchor .a-bad{background:var(--red-light);border:1px solid #fca5a5;}
+.anchor b{display:block;margin-bottom:3px;}
+.copy-area{width:100%;min-height:150px;background:#fbfcfe;font-size:12.5px;line-height:1.8;font-family:inherit;}
+.kw-box{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:10px 14px;font-family:Consolas,monospace;font-size:12.5px;line-height:1.8;margin:8px 0;white-space:pre-wrap;word-break:break-all;}
+.check-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;font-size:12.5px;border-bottom:1px dashed var(--border);}
+.check-item input{margin-top:3px;}
+.muted{color:var(--muted);font-size:12px;}
+.mt10{margin-top:10px;}
+.hr{border:none;border-top:1px dashed var(--border);margin:14px 0;}
+.status-select{border:1px solid var(--border);border-radius:6px;padding:3px 6px;font-size:12px;font-family:inherit;background:#fff;}
+.mini-input{border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;background:#fbfcfe;width:100%;}
+.mini-num{width:58px;border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:12px;font-family:inherit;text-align:center;background:#fff;}
+.rate{display:flex;gap:4px;}
+.rate span{width:26px;height:26px;line-height:24px;text-align:center;border:1px solid var(--border);border-radius:5px;font-size:12px;cursor:pointer;background:#fff;}
+.rate span.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.timeline{display:flex;gap:0;align-items:stretch;margin:12px 0;flex-wrap:wrap;}
+.tl-item{flex:1;min-width:110px;border-right:2px solid #fff;}
+.tl-bar{background:var(--primary-light);border-top:3px solid var(--primary);padding:8px;text-align:center;}
+.tl-bar b{display:block;font-size:12.5px;color:var(--primary);}
+.tl-bar span{font-size:11.5px;color:var(--muted);}
+.stat{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;min-width:96px;text-align:center;}
+.stat b{display:block;font-size:19px;color:var(--primary);}
+.stat span{font-size:11.5px;color:var(--muted);}
+.stat.sT b{color:var(--accent);}
+footer{max-width:1180px;margin:0 auto;padding:0 24px 30px;font-size:11.5px;color:var(--muted);line-height:1.8;}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:9px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:99;pointer-events:none;}
+.toast.show{opacity:.92;}
+.modal-mask{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-mask.show{display:flex;}
+.modal-box{background:#fff;border-radius:10px;padding:20px 22px;max-width:580px;width:100%;max-height:82vh;overflow:auto;box-shadow:0 12px 36px rgba(0,0,0,.22);}
+.modal-box textarea{margin-top:8px;min-height:200px;font-family:Consolas,monospace;}
+.print-head{display:none;}
+@media (max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}.anchor{grid-template-columns:1fr;}}
+@media print{
+  header,nav,footer,.no-print{display:none !important;}
+  body{background:#fff;font-size:12px;}
+  .panel{display:block !important;}
+  .card{break-inside:avoid;box-shadow:none;border:none;padding:0;margin-bottom:10px;}
+  .dim-block,.q-item{break-inside:avoid;}
+  .print-head{display:block;margin-bottom:12px;border-bottom:2px solid #1a3a6b;padding-bottom:8px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎤 通用AI生成面试题智能体</h1>
+  <p>输入层：采集与读取 ｜ 输出层：交付物 ｜ 落地配套：产品与实施 —— 全流程本地运行，候选人信息不出本机</p>
+  <div class="layer-tags">
+    <span>输入01 岗位JD与人才画像</span><span>输入02 简历与筛选结论</span><span>输入03 面试环节与面试官</span>
+    <span>输入04 考察维度与题型</span><span>输入05 输出偏好</span>
+    <span>输出01 结构化面试题集</span><span>输出02 评分标准与参考答案</span><span>输出03 候选人定制追问</span>
+    <span>输出04 面试评价打分卡</span><span>输出05 流程与时间分配</span>
+    <span>配套01 上游智能体打通</span><span>配套02 题库与能力模型</span><span>配套03 合规与隐私</span>
+    <span>配套04 题型与难度分层</span><span>配套05 人工复核与留痕</span>
+  </div>
+</header>
+
+<nav id="nav">
+  <button class="active" data-p="p1">📥 出题需求（输入层）</button>
+  <button data-p="p2">🧩 结构化面试题集</button>
+  <button data-p="p3">📊 评分标准与参考答案</button>
+  <button data-p="p4">🎯 候选人定制追问</button>
+  <button data-p="p5">📝 打分卡 · 流程与时间</button>
+  <button data-p="p6">🗂 题库与能力模型</button>
+  <button data-p="p7">📚 上游打通 · 合规 · 留痕</button>
+</nav>
+
+<main>
+<!-- ============ P1 输入层 ============ -->
+<div class="panel active" id="p1">
+  <div class="card">
+    <h3>出题项目选择</h3>
+    <div class="sub">一个岗位一份题本；以下输入层 5 项配置对当前项目生效</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:2;min-width:220px;">
+        <label>当前出题项目</label>
+        <select id="jobSelect" onchange="switchJob()"></select>
+      </div>
+      <button class="btn btn-primary" onclick="newJob()">＋ 新建出题项目</button>
+      <button class="btn btn-accent" onclick="loadDemo()">🎲 一键演练（载入示例岗位+候选人）</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteJob()">删除当前项目</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入01 · 岗位JD与人才画像</h3>
+    <div class="sub">岗位职责、任职要求、必备与优先技能、冰山素质项 —— 明确这份题<b>要考察什么</b></div>
+    <div class="grid2">
+      <div><label>岗位名称</label><input type="text" id="j_title" placeholder="例：区域销售经理（农资/农化）"></div>
+      <div><label>职级与汇报线 <span class="tip">（影响题目难度与考察侧重）</span></label><input type="text" id="j_level" placeholder="经理级，向大区总监汇报，带3-5人"></div>
+    </div>
+    <label>岗位职责 / 任职要求（JD 全文） <span class="tip">（可粘贴 JD，或点击「上游智能体打通」导入）</span></label>
+    <textarea id="j_portrait" rows="3" placeholder="例：负责华中区域农资产品渠道拓展，线下拜访县域经销商与农资店老板，促成铺货与复购，考核铺货率与回款率"></textarea>
+    <div class="grid2">
+      <div><label>必备技能 / 硬性要求 <span class="tip">（每行一条，同义词用 | 分隔）</span></label>
+        <textarea id="j_hard" rows="3" placeholder="3年以上渠道|大客户销售经验&#10;农资|农化|化肥|种子行业背景&#10;可适应长期出差"></textarea></div>
+      <div><label>优先技能 / 加分项</label>
+        <textarea id="j_plus" rows="3" placeholder="有县域经销商资源&#10;带过团队&#10;农学|植保相关专业"></textarea></div>
+    </div>
+    <label>冰山素质项 <span class="tip">（每行一条：动机/性格/价值观，越具体越好 —— 直接决定行为面试题）</span></label>
+    <textarea id="j_iceberg" rows="3" placeholder="能吃苦、愿意长期下沉县域&#10;结果导向、扛得住业绩压力&#10;面对拒绝不轻易放弃&#10;诚实、不夸大业绩"></textarea>
+    <div class="grid3">
+      <div><label>服务对象（客户叫什么） <span class="tip">（让题目有场景感）</span></label><input type="text" id="j_client" placeholder="经销商|农资店老板"></div>
+      <div><label>考核指标 / 结果口径</label><input type="text" id="j_metric" placeholder="铺货率|回款率"></div>
+      <div><label>典型工作场景关键词</label><input type="text" id="j_scene" placeholder="空白市场从0开拓、淡季压货、赊销回款"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入02 · 简历与筛选结论</h3>
+    <div class="sub">候选人背景、A/B/C 分级、风险预审疑点、本次重点考察方向 —— 决定「定制追问」长什么样</div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>候选人（从寻访名单选）</label>
+        <select id="candPick" onchange="pickCand()"><option value="">—— 手动录入 ——</option></select></div>
+      <div><label>姓名 / 代号</label><input type="text" id="k_name" placeholder="张建国 / 候选A"></div>
+      <div><label>当前公司 · 职位</label><input type="text" id="k_company" placeholder="某大型农化集团 · 省区经理"></div>
+    </div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>筛选分级</label>
+        <select id="k_grade" style="padding:8px;font-size:13px;">
+          <option value="A">A 级 · 重点推进（深挖+挑战）</option>
+          <option value="B" selected>B 级 · 待验证（验证+风险确认）</option>
+          <option value="C">C 级 · 快速判断（效率优先）</option>
+        </select></div>
+      <div><label>简历来源 / 筛选结论</label><input type="text" id="k_source" placeholder="Boss直聘投递 · 筛选智能体评分 78"></div>
+      <div><label>工作年限 / 稳定性</label><input type="text" id="k_years" placeholder="8年 · 近3年换2家"></div>
+    </div>
+    <label>简历背景摘要 + 关键项目经历 <span class="tip">（每行一条项目，会生成 STAR 深挖题）</span></label>
+    <textarea id="k_bg" rows="3" placeholder="8年农化渠道销售，现任省区经理带6人&#10;项目：华中新市场从0开拓，2年做到年销3000万&#10;项目：推动县域经销商从37家扩到120家"></textarea>
+    <div class="grid2">
+      <div><label>风险预审疑点 <span class="tip">（每行一条，会生成针对性追问）</span></label>
+        <textarea id="k_risk" rows="3" placeholder="近3年换2家公司，稳定性存疑&#10;业绩数据口径不清（个人贡献vs平台）&#10;带团队经验偏浅，仅6个月"></textarea></div>
+      <div><label>本次重点考察方向 <span class="tip">（每行一条，题量与配比会向其倾斜）</span></label>
+        <textarea id="k_focus" rows="3" placeholder="业绩真实性&#10;能否长期出差下沉&#10;带团队的管理心智"></textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入03 · 面试环节与面试官</h3>
+    <div class="sub">轮次（初面/复面/HR面/终面）、面试官角色、时长、线下或视频形式</div>
+    <div class="grid2">
+      <div><label>本次出题的轮次 <span class="tip">（可多选，决定题型与难度分层）</span></label>
+        <div id="roundBoxes" class="chips"></div></div>
+      <div><label>面试形式</label>
+        <div id="formBoxes" class="chips"></div></div>
+    </div>
+    <div class="grid4">
+      <div><label>面试官角色</label>
+        <select id="j_interviewer" style="padding:8px;font-size:13px;">
+          <option>HR</option><option>业务直线经理</option><option>业务负责人/总监</option><option>HR+业务双人</option><option>老板/总经理终面</option>
+        </select></div>
+      <div><label>单场时长（分钟）</label>
+        <select id="j_duration" style="padding:8px;font-size:13px;">
+          <option value="20">20 分钟（电话初筛）</option>
+          <option value="30">30 分钟</option>
+          <option value="45" selected>45 分钟</option>
+          <option value="60">60 分钟</option>
+          <option value="90">90 分钟（终面/深度）</option>
+        </select></div>
+      <div><label>面试官人数</label><input type="text" id="j_panel" placeholder="1对1 / 2对1"></div>
+      <div><label>是否需要候选人提问环节</label>
+        <select id="j_candask" style="padding:8px;font-size:13px;"><option value="yes">需要（留问询时间）</option><option value="no">不需要</option></select></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入04 · 考察维度与题型</h3>
+    <div class="sub">专业技能、项目经验、素质动机、价值观、情景应变、压力抗压；结构化或半结构化偏好</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <label>考察维度 <span class="tip">（可多选，勾选后会按其生成题目并分配权重）</span></label>
+        <div id="dimBoxes" class="chips"></div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <label>题型 <span class="tip">（可多选）</span></label>
+        <div id="typeBoxes" class="chips"></div>
+      </div>
+    </div>
+    <div class="grid3">
+      <div><label>结构化偏好</label>
+        <select id="j_struct" style="padding:8px;font-size:13px;">
+          <option value="struct">结构化（统一题本，逐题打分）</option>
+          <option value="semi" selected>半结构化（题本 + 自由追问）</option>
+        </select></div>
+      <div><label>是否配评分标准与参考答案</label>
+        <select id="j_score" style="padding:8px;font-size:13px;"><option value="yes" selected>需要（配行为锚定）</option><option value="no">不需要，只要题</option></select></div>
+      <div><label>是否配追问</label>
+        <select id="j_follow" style="padding:8px;font-size:13px;"><option value="yes" selected>每题配 2-3 条追问</option><option value="no">不配</option></select></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入05 · 输出偏好配置</h3>
+    <div class="sub">题量、难度分层、语言风格与行业话术</div>
+    <div class="grid3">
+      <div><label>题量</label>
+        <select id="j_qcount" style="padding:8px;font-size:13px;">
+          <option value="8">8 题（快筛/电话面）</option>
+          <option value="12">12 题</option>
+          <option value="16" selected>16 题（标准题本）</option>
+          <option value="20">20 题（结构化全套）</option>
+          <option value="24">24 题（深度终面）</option>
+        </select></div>
+      <div><label>难度分层</label>
+        <select id="j_diff" style="padding:8px;font-size:13px;">
+          <option value="auto" selected>自动（按轮次梯度配置：基础→中→高）</option>
+          <option value="flat">不分层（全中难度）</option>
+          <option value="hard">整体偏难（终面/高压岗）</option>
+        </select></div>
+      <div><label>语言风格</label>
+        <select id="j_style" style="padding:8px;font-size:13px;">
+          <option value="pro">专业严谨（客观描述型问法）</option>
+          <option value="warm" selected>亲和引导（先放松再深挖）</option>
+          <option value="pressure">压力挑战（直问式、追问到底）</option>
+        </select></div>
+    </div>
+    <label>行业话术 / 术语偏好 <span class="tip">（生成的题目会自然带这些词，让候选人不觉得是套模板）</span></label>
+    <textarea id="j_terms" rows="2" placeholder="铺货、回款、赊销账期、作物解决方案、冬储、田间示范、经销商赋能、县域网点"></textarea>
+    <div style="margin-top:14px;">
+      <button class="btn btn-primary" onclick="saveJob()">💾 保存当前项目配置</button>
+      <button class="btn btn-ghost" onclick="genAll()">⚡ 保存并生成全套（题集+标准+追问+打分卡）</button>
+      <span class="muted">所有数据仅保存在本机浏览器 localStorage</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ P2 结构化面试题集 ============ -->
+<div class="panel" id="p2">
+  <div class="card">
+    <div class="print-head"><b style="font-size:15px;">面试题本</b> · <span id="phTitle"></span></div>
+    <h3>输出01 · 结构化面试题集</h3>
+    <div class="sub">按维度分组：专业题 / 项目深挖 / 情景题 / 行为STAR / 动机价值观 / 压力题；每题带题型、难度层级、考察点标签</div>
+    <button class="btn btn-accent" onclick="genQuestions()">🧩 生成结构化面试题集</button>
+    <button class="btn btn-ghost" onclick="copyPanel('qOutput')">📋 复制题集全文</button>
+    <button class="btn btn-ghost" onclick="saveQuestionsToBank()">💾 全部存入题库</button>
+    <button class="btn btn-ghost" onclick="doPrint()">🖨 打印 / 导出PDF</button>
+    <div class="warn" id="qWarn">请先在「出题需求」页填写岗位名称 + 必备技能/考察维度，题目才有骨架。</div>
+    <div id="qOutput"></div>
+  </div>
+</div>
+
+<!-- ============ P3 评分标准 ============ -->
+<div class="panel" id="p3">
+  <div class="card">
+    <h3>输出02 · 评分标准与参考答案</h3>
+    <div class="sub">每题：考察点 → 评分要点 → 优秀 / 合格 / 不合格行为锚定，统一全场打分尺度，避免「凭感觉」</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;">
+        <label>选择要查看标准的题目 <span class="tip">（按维度筛选）</span></label>
+        <select id="scoreFilter" onchange="genScore()"></select>
+      </div>
+      <button class="btn btn-accent" onclick="genScore()">📊 生成评分标准</button>
+      <button class="btn btn-ghost" onclick="copyPanel('scoreOutput')">📋 复制评分标准</button>
+    </div>
+    <div class="warn" id="scoreWarn">请先在「结构化面试题集」页生成题目。</div>
+    <div id="scoreOutput"></div>
+  </div>
+</div>
+
+<!-- ============ P4 定制追问 ============ -->
+<div class="panel" id="p4">
+  <div class="card">
+    <h3>输出03 · 候选人定制追问</h3>
+    <div class="sub">针对简历疑点与项目经历生成个性化追问，承接「风险预审清单」逐条闭环 —— 面试官照着念就能问透</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:1;min-width:240px;">
+        <label>定制对象</label>
+        <select id="tailorTarget" onchange="genTailor()"></select>
+      </div>
+      <button class="btn btn-accent" onclick="genTailor()">🎯 生成定制追问</button>
+      <button class="btn btn-ghost" onclick="copyPanel('tailorOutput')">📋 复制追问清单</button>
+    </div>
+    <div class="warn" id="tailorWarn">请先在「出题需求」页填写候选人背景、风险疑点与重点考察方向。</div>
+    <div id="tailorOutput"></div>
+  </div>
+</div>
+
+<!-- ============ P5 打分卡 + 流程 ============ -->
+<div class="panel" id="p5">
+  <div class="card">
+    <div class="print-head"><b style="font-size:15px;">面试评价打分卡</b> · <span id="phTitle2"></span></div>
+    <h3>输出04 · 面试评价打分卡 <span class="badge hi">面试官现场直接填写</span></h3>
+    <div class="sub">维度评分（1-5分）× 权重 = 综合得分；含记录区。点选分值即时汇总，可打印带走</div>
+    <button class="btn btn-accent" onclick="genScorecard()">📝 生成打分卡</button>
+    <button class="btn btn-ghost" onclick="resetScorecard()">清空评分</button>
+    <button class="btn btn-ghost" onclick="doPrint()">🖨 打印打分卡</button>
+    <div id="scorecardOutput"></div>
+  </div>
+  <div class="card">
+    <h3>输出05 · 流程与时间分配</h3>
+    <div class="sub">各环节时长、开场与收尾话术、反馈承诺与下一步说明 —— 按单场时长自动配比</div>
+    <button class="btn btn-accent" onclick="genTimeline()">⏱ 生成流程与话术</button>
+    <button class="btn btn-ghost" onclick="copyPanel('timelineOutput')">📋 复制流程全文</button>
+    <div id="timelineOutput"></div>
+  </div>
+</div>
+
+<!-- ============ P6 题库 ============ -->
+<div class="panel" id="p6">
+  <div class="card">
+    <h3>落地配套02 · 题库与能力模型</h3>
+    <div class="sub">沉淀公司能力词典、岗位题库、历史面经，持续积累复用 —— 下次同岗位出题直接调用，不必重造</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;" id="bankStats"></div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>所属维度</label>
+        <select id="bk_dim" style="padding:8px;font-size:13px;"></select></div>
+      <div><label>题型</label>
+        <select id="bk_type" style="padding:8px;font-size:13px;">
+          <option>专业题</option><option>项目深挖</option><option>情景题</option><option>行为STAR</option><option>动机价值观</option><option>压力题</option>
+        </select></div>
+      <div><label>难度层级</label>
+        <select id="bk_level" style="padding:8px;font-size:13px;">
+          <option>初面·基础</option><option selected>复面·中</option><option>终面·高</option>
+        </select></div>
+    </div>
+    <label>题目正文</label>
+    <input type="text" id="bk_text" placeholder="例：请讲一个你把亏损网点做回盈利的完整过程，关键动作是什么？">
+    <label>考察点 <span class="tip">（评分时看什么）</span></label>
+    <input type="text" id="bk_point" placeholder="例：问题诊断能力、资源调度、结果可验证性">
+    <button class="btn btn-primary" onclick="addBankItem()">＋ 加入题库</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportBankCSV()">⬇ 导出题库 CSV</button>
+    <button class="btn btn-danger btn-sm" onclick="clearBank()">清空题库</button>
+    <div class="hr"></div>
+    <div style="overflow-x:auto;">
+      <table id="bankTable">
+        <thead><tr><th>维度</th><th>题型</th><th>难度</th><th>题目</th><th>考察点</th><th>操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h3>落地配套04 · 题型与难度分层规则</h3>
+    <div class="sub">专业、行为、情景、压力题按「初面 → 终面」梯度配置难度与题量，避免初面问终面题、终面还在问基础</div>
+    <table>
+      <thead><tr><th>轮次</th><th>主打题型</th><th>难度</th><th>题量与节奏</th><th>主要目的</th></tr></thead>
+      <tbody>
+        <tr><td><b>初面 / 电话筛</b></td><td>资历核对、基础专业题、1-2道行为STAR</td><td><span class="badge hi">基础</span></td><td>8-12题，单题≤3分钟，节奏快</td><td>快速排除硬性不符、验证真实性</td></tr>
+        <tr><td><b>复面 / 业务面</b></td><td>项目深挖、情景应变、专业进阶</td><td><span class="badge mid">中</span></td><td>12-16题，单题5-8分钟，深挖到底</td><td>判断能力真伪与迁移性</td></tr>
+        <tr><td><b>HR面</b></td><td>动机价值观、稳定性、薪酬预期、软素质</td><td><span class="badge mid">中</span></td><td>8-10题，重开放交流</td><td>判断匹配度与留存概率</td></tr>
+        <tr><td><b>终面 / 老板面</b></td><td>压力抗压、格局价值观、关键决策复盘</td><td><span class="badge lo">高</span></td><td>6-10题，少而深</td><td>判断上限、抗压与长期共事可能</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ P7 上游打通/合规/留痕 ============ -->
+<div class="panel" id="p7">
+  <div class="card">
+    <h3>落地配套01 · 与上游智能体打通</h3>
+    <div class="sub">自动读取「JD生成智能体」的岗位画像与「简历筛选智能体」的结论与疑点，一键回填，不重复录入</div>
+    <div class="grid2">
+      <div><label>上游内容（岗位画像 / 筛选结论 JSON 或纯文本）</label>
+        <textarea id="upstreamPaste" rows="5" placeholder="支持两种输入：&#10;① JSON：{&quot;title&quot;:&quot;岗位名&quot;,&quot;hard&quot;:[...],&quot;plus&quot;:[...],&quot;iceberg&quot;:[...],&quot;name&quot;:&quot;候选人&quot;,&quot;grade&quot;:&quot;A&quot;,&quot;risk&quot;:[...],&quot;focus&quot;:[...],&quot;project&quot;:[...]}&#10;② 纯文本：带「必备/优先/冰山/风险/重点」小标题的清单"></textarea></div>
+      <div><label>或直接选择已入库的简历筛选结果</label>
+        <div style="font-size:12.5px;line-height:1.9;color:var(--muted);">
+          · 从「通用简历筛选智能体」复制候选人的 <b>入选理由 / 风险疑点 / 重点考察方向</b> 粘到左侧<br>
+          · 从「JD生成智能体」复制 <b>必备技能 / 加分项 / 素质要求</b> 粘到左侧<br>
+          · 从「通用人才寻访智能体」的寻访名单选人：<select id="poolPick" style="width:auto;display:inline-block;padding:3px 8px;font-size:12.5px;"><option value="">（本工具暂无共享池，见下）</option></select><br>
+          <span style="color:var(--amber);">提示：人才寻访名单在本工具内以「输入02 候选人」形式录入即可，本工具已支持与其结构对齐。</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="importUpstream()">⬆ 识别并回填到输入层</button>
+    <div class="ok" id="upstreamOk">已识别并回填到「出题需求」页，请核对后保存。</div>
+  </div>
+
+  <div class="card">
+    <h3>落地配套03 · 合规与隐私清单 <span class="badge hi">每次出题前过一遍</span></h3>
+    <div class="sub">不引导歧视性提问，保护候选人隐私，题目可考核、可验证、可记录</div>
+    <div id="complianceList"></div>
+    <div class="hr"></div>
+    <div class="block" style="border-left-color:var(--red);">
+      <h4>🚫 严禁出现的提问（出现即违规，需立即删除）</h4>
+      <div class="muted" style="line-height:2;">
+        婚育状况 / 生育计划 / 是否怀孕　｜　性别、年龄、籍贯、民族、宗教、政治面貌　｜　家庭收入、房产、婚恋隐私　｜
+        健康状况（与岗位无关的部分）、病史　｜　过往薪资流水细节（可问预期，不强制提供证明）　｜
+        与岗位无关的身体条件、外貌评价　｜　"你会不会很快结婚生子"这类伪装的稳定性问题
+      </div>
+    </div>
+    <div class="block" style="border-left-color:var(--green);">
+      <h4>✅ 可以合法问的替代问法</h4>
+      <div class="muted" style="line-height:2;">
+        稳定性 → 「过去每段经历做多久、为什么离开」　｜　出差意愿 → 「这个岗位每月大约15天在县乡跑，你的实际情况能支撑吗」　｜
+        加班 → 「旺季（如冬储期）会有连续高强度节奏，你过去怎么应对」　｜　薪酬 → 「你期望的薪资结构和底线是多少」
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>落地配套05 · 人工复核与留痕</h3>
+    <div class="sub">AI 出题并附评分标准，面试官终审核调整；每次修订与出题使用记录带时间戳留痕，可追溯</div>
+    <textarea id="reviewNote" rows="3" placeholder="例：2026-10-15 将第7题「你打算什么时候要孩子」替换为「旺季连续高强度出差的应对」——原题涉及隐私，不合规"></textarea>
+    <button class="btn btn-primary" onclick="saveReviewNote()">＋ 记录本次复核留痕</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportAllTxt()">⬇ 导出面经/留痕记录</button>
+    <div id="reviewLog"></div>
+  </div>
+</div>
+</main>
+
+<footer>
+  通用AI生成面试题智能体 · 场景4（AI生成面试题智能体搭建要素）本地实现 ｜ 应用为本机单文件工具，候选人信息仅存本机浏览器，不上传任何第三方 ｜
+  合规红线：不引导歧视性提问、不触碰婚育隐私、题目可考核可验证可记录、AI出题必经人工复核留痕
+</footer>
+<div class="toast" id="toast"></div>
+<div class="modal-mask" id="modalMask">
+  <div class="modal-box">
+    <div id="modalBody" style="font-size:13.5px;line-height:1.85;"></div>
+    <div style="margin-top:16px;text-align:right;" id="modalBtns">
+      <button class="btn btn-ghost btn-sm" id="modalCancel">取消</button>
+      <button class="btn btn-primary btn-sm" id="modalOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 基础工具 ================= */
+const $=id=>document.getElementById(id);
+const LS='interviewKitV1';
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1600);}
+function copyRaw(txt,okMsg){
+  if(!txt||!txt.trim()){toast('内容为空');return;}
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast(okMsg||'已复制到剪贴板')).catch(()=>toast('复制失败，请手动选择'));
+}
+function copyPanel(id){
+  const el=$(id);if(!el){toast('没有可复制内容');return;}
+  const t=el.innerText.replace(/\n{3,}/g,'\n\n');
+  if(!t.trim()){toast('请先生成内容');return;}
+  copyRaw(t,'已复制全文');
+}
+const esc=s=>(s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const lines=s=>(s||'').split('\n').map(x=>x.trim()).filter(Boolean);
+
+/* ===== 页内弹层：替代原生 confirm（应用内预览 iframe 会禁用原生弹窗，返回 undefined 导致「点了没反应」） ===== */
+let __okCb=null;
+function askConfirm(msg,cb){
+  $('modalBody').textContent=msg;
+  $('modalBtns').style.display='';$('modalCancel').textContent='取消';$('modalOk').style.display='';
+  __okCb=cb;$('modalMask').classList.add('show');
+}
+function modalClose(){$('modalMask').classList.remove('show');__okCb=null;}
+function showFallback(title,content){
+  $('modalBody').innerHTML='<b>'+esc(title)+'</b><div class="muted" style="margin:6px 0 0;">自动下载被当前环境拦截，请全选复制以下内容自行保存：</div><textarea class="copy-area" readonly></textarea>';
+  $('modalBody').querySelector('textarea').value=content;
+  $('modalBtns').style.display='';$('modalCancel').textContent='关闭';$('modalOk').style.display='none';
+  $('modalMask').classList.add('show');
+  const ta=$('modalBody').querySelector('textarea');
+  if(ta){if(ta.focus)ta.focus();if(ta.select)ta.select();}
+}
+/* 通用导出：优先触发下载，异常时降级为可复制文本 */
+function downloadFile(name,content,mime){
+  try{
+    const blob=new Blob([content],{type:mime||'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=name;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{try{URL.revokeObjectURL(url);if(a.parentNode)a.parentNode.removeChild(a);}catch(e){}},1500);
+    toast('已导出「'+name+'」到本机下载目录');
+  }catch(e){showFallback(name,content);}
+}
+function doPrint(){try{window.print();}catch(e){toast('当前环境不支持直接打印，请用「导出面试手册」获取文本版');}}
+
+/* ================= 数据层 ================= */
+let DB={jobs:[],cur:-1,candidates:[],bank:[],reviews:[],sc:{}};
+try{DB=Object.assign(DB,JSON.parse(localStorage.getItem(LS)||'{}'));}catch(e){}
+function save(){localStorage.setItem(LS,JSON.stringify(DB));}
+function cur(){return DB.jobs[DB.cur];}
+function blankJob(){return{
+  id:Date.now(),name:'未命名出题项目',
+  title:'',level:'',portrait:'',hard:'',plus:'',iceberg:'',client:'',metric:'',scene:'',
+  k_name:'',k_company:'',k_grade:'B',k_source:'',k_years:'',k_bg:'',k_risk:'',k_focus:'',
+  rounds:['复面'],form:['线下'],interviewer:'业务直线经理',duration:'45',panel:'1对1',candask:'yes',
+  dims:['专业技能','项目经验','情景应变','素质动机','价值观'],
+  types:['专业题','项目深挖','情景题','行为STAR','动机价值观'],
+  struct:'semi',score:'yes',follow:'yes',
+  qcount:'16',diff:'auto',style:'warm',terms:'',
+  weights:{},qs:[],_tailor:null
+};}
+const ROUNDS=['初面','复面','HR面','终面'];
+const FORMS=['线下','视频','电话'];
+const DIMS=['专业技能','项目经验','情景应变','素质动机','价值观','压力抗压'];
+const TYPES=['专业题','项目深挖','情景题','行为STAR','动机价值观','压力题'];
+const DEF_WEIGHT={'专业技能':30,'项目经验':25,'情景应变':15,'素质动机':15,'价值观':10,'压力抗压':5};
+
+/* ================= 复选渲染 ================= */
+function renderBoxes(){
+  const j=cur();if(!j)return;
+  $('roundBoxes').innerHTML=ROUNDS.map(v=>`<span class="chip" style="cursor:pointer;${j.rounds.includes(v)?'':'opacity:.4'}" onclick="toggleArr('rounds','${v}',this)">${v}</span>`).join('');
+  $('formBoxes').innerHTML=FORMS.map(v=>`<span class="chip" style="cursor:pointer;${j.form.includes(v)?'':'opacity:.4'}" onclick="toggleArr('form','${v}',this)">${v}</span>`).join('');
+  $('dimBoxes').innerHTML=DIMS.map(v=>`<span class="chip" style="cursor:pointer;${j.dims.includes(v)?'':'opacity:.4'}" onclick="toggleArr('dims','${v}',this)">${v}</span>`).join('');
+  $('typeBoxes').innerHTML=TYPES.map(v=>`<span class="chip" style="cursor:pointer;${j.types.includes(v)?'':'opacity:.4'}" onclick="toggleArr('types','${v}',this)">${v}</span>`).join('');
+}
+function toggleArr(field,val,el){
+  const j=cur();const i=j[field].indexOf(val);
+  if(i>=0){j[field].splice(i,1);el.style.opacity=.4;}else{j[field].push(val);el.style.opacity=1;}
+  if(field==='dims'){save();renderScorecardIfAny();}
+}
+
+/* ================= 项目 CRUD ================= */
+function renderJobSelect(){
+  $('jobSelect').innerHTML=DB.jobs.map((j,i)=>`<option value="${i}" ${i===DB.cur?'selected':''}>${esc(j.name)}</option>`).join('');
+}
+function switchJob(){DB.cur=+$('jobSelect').value;fillForm();renderBoxes();renderCandSelect();renderTailorTarget();save();}
+function newJob(){DB.jobs.push(blankJob());DB.cur=DB.jobs.length-1;fillForm();renderBoxes();renderJobSelect();renderCandSelect();renderTailorTarget();save();toast('已新建出题项目');}
+function deleteJob(){
+  if(!cur())return;
+  const nm=cur().name;
+  askConfirm('确定删除当前出题项目「'+nm+'」？该项目的题本、评分与留痕记录会一并删除，不可恢复。',()=>{
+    DB.jobs.splice(DB.cur,1);DB.cur=0;fillForm();renderJobSelect();renderBoxes();renderCandSelect();renderTailorTarget();save();toast('已删除项目「'+nm+'」');
+  });
+}
+function fillForm(){
+  const j=cur();if(!j){$('jobSelect').innerHTML='<option>—— 请先新建项目 ——</option>';return;}
+  const set=(id,v)=>{if($(id))$(id).value=v||'';};
+  set('j_title',j.title);set('j_level',j.level);set('j_portrait',j.portrait);
+  set('j_hard',j.hard);set('j_plus',j.plus);set('j_iceberg',j.iceberg);
+  set('j_client',j.client);set('j_metric',j.metric);set('j_scene',j.scene);
+  set('k_name',j.k_name);set('k_company',j.k_company);set('k_source',j.k_source);set('k_years',j.k_years);
+  set('k_bg',j.k_bg);set('k_risk',j.k_risk);set('k_focus',j.k_focus);
+  set('j_panel',j.panel);set('j_terms',j.terms);
+  if($('k_grade'))$('k_grade').value=j.k_grade||'B';
+  if($('j_interviewer'))$('j_interviewer').value=j.interviewer;
+  if($('j_duration'))$('j_duration').value=j.duration;
+  if($('j_candask'))$('j_candask').value=j.candask;
+  if($('j_struct'))$('j_struct').value=j.struct;
+  if($('j_score'))$('j_score').value=j.score;
+  if($('j_follow'))$('j_follow').value=j.follow;
+  if($('j_qcount'))$('j_qcount').value=j.qcount;
+  if($('j_diff'))$('j_diff').value=j.diff;
+  if($('j_style'))$('j_style').value=j.style;
+  if(!j.name||j.name==='未命名出题项目')j.name=(j.title||'未命名出题项目');
+  $('jobSelect').value=DB.cur;
+}
+function collect(){
+  const j=cur();if(!j)return null;
+  const g=id=>$(id)?$(id).value.trim():'';
+  j.title=g('j_title');j.level=g('j_level');j.portrait=g('j_portrait');
+  j.hard=g('j_hard');j.plus=g('j_plus');j.iceberg=g('j_iceberg');
+  j.client=g('j_client');j.metric=g('j_metric');j.scene=g('j_scene');
+  j.k_name=g('k_name');j.k_company=g('k_company');j.k_source=g('k_source');j.k_years=g('k_years');
+  j.k_bg=g('k_bg');j.k_risk=g('k_risk');j.k_focus=g('k_focus');
+  j.panel=g('j_panel');j.terms=g('j_terms');
+  j.k_grade=$('k_grade').value;j.interviewer=$('j_interviewer').value;j.duration=$('j_duration').value;
+  j.candask=$('j_candask').value;j.struct=$('j_struct').value;j.score=$('j_score').value;
+  j.follow=$('j_follow').value;j.qcount=$('j_qcount').value;j.diff=$('j_diff').value;j.style=$('j_style').value;
+  j.name=j.title||j.name||'未命名出题项目';
+  return j;
+}
+function saveJob(){const j=collect();if(!j)return;save();renderJobSelect();$('jobSelect').value=DB.cur;toast('✅ 已保存「'+j.name+'」');}
+function genAll(){
+  const j=collect();if(!j)return;save();renderJobSelect();$('jobSelect').value=DB.cur;
+  genQuestions(true);genScore();genTailor();genScorecard();genTimeline();
+  toast('已生成全套：题集+评分标准+定制追问+打分卡+流程');
+  go('p2');
+}
+function go(pid){
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  const b=document.querySelector('#nav button[data-p="'+pid+'"]');if(b)b.classList.add('active');
+  $(pid).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ================= 示例 ================= */
+function loadDemo(){
+  const j=blankJob();
+  Object.assign(j,{
+    name:'示例：华中区农资大区销售经理（复面）',
+    title:'区域销售经理（农资/农化）',level:'经理级，向大区总监汇报，带3-5人团队',
+    portrait:'负责华中区域农资产品渠道拓展，线下拜访县域经销商与农资店老板，促成铺货与复购，考核铺货率与回款率；需要长期出差下沉，能从0开拓空白市场。',
+    hard:'3年以上渠道|大客户销售|B端销售经验\n农资|农化|化肥|种子|植保行业背景\n可适应长期出差|县域出差\n独立完成过区域业绩指标',
+    plus:'有县域经销商资源|客户资源可迁移\n带过|管理过团队\n农学|植保|植物保护相关专业',
+    iceberg:'能吃苦、愿意长期下沉县域跑店\n结果导向、扛得住业绩压力\n面对拒绝不轻易放弃\n诚实、不夸大业绩数字\n主动、不用催就会往前推',
+    client:'经销商|农资店老板',metric:'铺货率|回款率',scene:'空白市场从0开拓、淡季压货、赊销回款、田间示范会',
+    k_name:'张建国',k_company:'某大型农化集团 · 省区销售经理',k_grade:'A',k_source:'Boss直聘投递 · 简历筛选智能体评分 82',k_years:'8年 · 近3年换2家',
+    k_bg:'8年农化渠道销售，现任省区经理带6人\n项目：华中新市场从0开拓，2年做到年销3000万\n项目：推动县域经销商从37家扩到120家\n项目：主导冬储压货方案，单季回款率提升到92%',
+    k_risk:'近3年换2家公司，稳定性存疑\n业绩3000万的口径不清（个人贡献vs平台投入）\n带团队仅6个月，管理经验偏浅\n简历写"负责"多处，个人动作边界模糊',
+    k_focus:'业绩真实性与个人贡献边界\n能否长期出差下沉到县域\n带团队的管理心智\n抗压与离职原因的真实性',
+    rounds:['复面','终面'],form:['线下','视频'],interviewer:'业务负责人/总监',duration:'60',panel:'2对1',candask:'yes',
+    dims:['专业技能','项目经验','情景应变','素质动机','价值观','压力抗压'],
+    types:['专业题','项目深挖','情景题','行为STAR','动机价值观','压力题'],
+    struct:'semi',score:'yes',follow:'yes',qcount:'20',diff:'auto',style:'pressure',
+    terms:'铺货、回款、赊销账期、作物解决方案、冬储、田间示范会、经销商赋能、县域网点'
+  });
+  DB.jobs.push(j);DB.cur=DB.jobs.length-1;
+  DB.candidates.push({id:Date.now()+1,name:'张建国',company:'某大型农化集团',role:'省区经理',status:'onboard_open',channel:'猎聘沟通',intent:4,note:'6年农化渠道✓ 带过5人✓ 有县域资源✓',grade:'A',risk:'近3年换2家，稳定性存疑\n业绩口径不清',focus:'业绩真实性、出差意愿、管理心智',bg:'8年农化渠道，华中从0做到3000万'});
+  save();fillForm();renderBoxes();renderJobSelect();renderCandSelect();renderTailorTarget();
+  genQuestions(true);genScore();genTailor();genScorecard();genTimeline();
+  go('p2');toast('已载入示例项目并生成全套面试材料');
+}
+
+/* ================= 出题引擎 ================= */
+function terms(j){return lines(j.terms.replace(/、/g,'\n'));}
+function pickTerm(j,i,def){const t=terms(j);if(!t.length)return def;return t[i%t.length];}
+function cli(j){return (j.client||'客户').split('|')[0]||'客户';}
+function metric(j){return (j.metric||'业绩结果').split('|')[0]||'业绩结果';}
+function scene(j){return (j.scene||'').split('|')[0]||'一个空白市场';}
+function first(s){return (s||'').split('|')[0].trim();}
+function styleWrap(text,j){
+  const st=j.style;
+  if(st==='pressure')return text;
+  if(st==='warm')return text;
+  return text;
+}
+function styleTag(j){
+  return {pro:'问法提示：客观描述型，不引导答案，允许沉默3-5秒再追问。',
+    warm:'问法提示：先给一句缓冲（"这个问题不着急，慢慢说"），再进入正题。',
+    pressure:'问法提示：直问式，不给台阶；答不到细节就连续追问，观察情绪反应。'}[j.style]||'';
+}
+/* 生成题目池 */
+function buildPool(j){
+  const hard=lines(j.hard),plus=lines(j.plus),ice=lines(j.iceberg);
+  const t=terms(j), C=cli(j), M=metric(j), S=scene(j);
+  const t0=t[0]||'铺货', t1=t[1]||'回款', t2=t[2]||'经销商';
+  const P={};DIMS.forEach(d=>P[d]=[]);
+  /* --- 专业技能 --- */
+  [...hard,...plus].forEach((h,i)=>{
+    const s=first(h);if(!s)return;
+    P['专业技能'].push({type:'专业题',level:'',text:`请结合你的实际经历，讲一下你在「${s}」上的完整做法：从判断机会、制定动作，到最终拿到${M}，每一步你具体做了什么？`,
+      probe:[`这套做法你用过几次？哪一次效果最好、哪一次翻车了？`,`如果同行照搬你的做法，最容易在哪一步卡住？`,`这里面你最依赖的方法、工具或资源是什么？`],
+      point:`「${s}」的实操深度、方法论自洽性与结果可验证度`});
+    P['专业技能'].push({type:'专业题',level:'',text:`在「${s}」这件事上，你怎么判断该不该投入？请给出你常用的3个判断信号，以及1个止损条件。`,
+      probe:[`有没有你判断错过的时候？错在哪一步？`,`这3个信号里，哪个是你踩坑之后才总结出来的？`],
+      point:`是否具备可复用的判断标准，而非事后归因`});
+    if(i%2===1)P['专业技能'].push({type:'专业题',level:'',text:`假设让你从零搭一套「${s}」的落地动作，前3个月你会怎么排优先级？每个月分别交付什么？`,
+      probe:[`第一个月你打算先见谁、先做什么？`,`如果公司只给你一半预算，你砍掉哪部分？`],
+      point:`方案结构化能力与资源约束下的取舍`});
+  });
+  if(!hard.length){P['专业技能'].push({type:'专业题',level:'',text:`请讲讲你对「${C}」这个群体的理解：他们最在意什么、最担心什么？你的判断依据是什么？`,
+    probe:[`你接触过多少这类客户？举一次印象最深的。`,`你的判断如果错了，通常会错在哪？`],point:'对业务对象的真实理解深度'});}
+  P['专业技能'].push({type:'专业题',level:'',text:`你如何判断一个${C}是否值得投入资源？请说清你会看哪三个信号，以及踩过的坑。`,
+    probe:[`有没有你看走眼过的案例？后来怎么补救？`,`这三条是公司教的还是你自己摸出来的？`],point:'客户价值判断的实战经验'});
+  P['专业技能'].push({type:'专业题',level:'',text:`关于${M}，你是怎么做日常管理的？请说出你实际用的记录方式、复盘周期和最关注的那个数。`,
+    probe:[`这个数出问题的时候，你通常在哪个环节先发现？`,`你会怎么把结果拆给下面或同事？`],point:'业绩管理的颗粒度与过程管控'});
+  /* --- 项目经验 --- */
+  const projs=lines(j.k_bg).filter(x=>/项目|主导|负责|从0|推动|开拓/.test(x)).slice(0,4);
+  if(projs.length){
+    projs.forEach((p,i)=>{
+      const brief=p.length>34?p.slice(0,34)+'…':p;
+      P['项目经验'].push({type:'项目深挖',level:'',text:`请用 STAR 完整讲一遍简历里这一段——「${brief}」：当时的业务目标是什么？你的角色和权限边界在哪？`,
+        probe:[`这个目标是谁定的？你当时认同吗？`,`最难的一环是什么？如果重来一次你会改什么？`,`过程中你主动争取过什么资源？怎么争取的？`],
+        point:`项目真实性、个人贡献边界、目标理解深度`});
+      P['项目经验'].push({type:'项目深挖',level:'',text:`「${brief}」这件事最终的数据是多少？和同期同行比是什么水平？这个数字是怎么统计出来的？`,
+        probe:[`这个结果里有多少是你个人的贡献，多少靠平台、资源或运气？`,`如果换一个人来做，大概能拿到几成？`],
+        point:'结果真实性与归因诚实度'});
+      if(i===0)P['项目经验'].push({type:'项目深挖',level:'',text:`「${brief}」里你和谁发生过分歧？最后是怎么解决的？现在回头看，你当时的判断对吗？`,
+        probe:[`如果对方当时坚持自己的做法，你会怎么办？`,`这件事之后你和他的合作关系变了吗？`],point:'冲突处理与自我复盘能力'});
+    });
+  }else{
+    P['项目经验'].push({type:'项目深挖',level:'',text:`请挑一个你最有代表性的项目，用 STAR 完整讲一遍：业务目标、你的角色、关键动作、最终结果。`,
+      probe:[`最难的一环是什么？`,`结果里有多少是你个人的贡献？`],point:'项目真实性与个人贡献边界'});
+  }
+  P['项目经验'].push({type:'项目深挖',level:'',text:`你刚才提到的经历里，最有成就感的是哪一段？为什么是它，而不是别的？`,
+    probe:[`这件事里你付出了什么别人看不到的东西？`,`成就感来自结果本身，还是别人的认可？`],point:'内在驱动力与价值取向'});
+  /* --- 情景应变 --- */
+  P['情景应变'].push({type:'情景题',level:'',text:`假设你明天接手${S}，手上只有一个季度、两个人，你会怎么安排前30天？第1天、第7天、第30天分别要看什么结果？`,
+    probe:[`第一周你就被${C}拒绝了三次，你会怎么调整？`,`这个季度结束时，你用什么证明自己做对了？`],point:'从0规划能力与阶段性目标拆解'});
+  P['情景应变'].push({type:'情景题',level:'',text:`一位合作多年的${C}当面说「你们的东西太贵了，我准备换别家」，手上还有一堆货没卖完，你现场怎么办？`,
+    probe:[`你会不会降价？降到什么程度你就不做了？`,`如果对方是在拿你压价、其实不想换，你怎么识别？`],point:'谈判应变与底线意识'});
+  P['情景应变'].push({type:'情景题',level:'',text:`${t1}这个月还差30%，还有5天时间，你手上能动的资源有限。请说出你接下来每天的具体动作。`,
+    probe:[`如果到最后一天还是差10%，你会怎么向上反馈？`,`这种情况下你会不会做动作变形的事？`],point:'压力下的行动力与合规底线'});
+  P['情景应变'].push({type:'情景题',level:'',text:`同时有三个${C}催你，一个内部报表今天必须交，你只有一个下午。你怎么排优先级，怎么跟被推后的人交代？`,
+    probe:[`如果被推后的是你最大的客户呢？`,`你怎么让被推后的人不觉得被怠慢？`],point:'优先级判断与关系维护'});
+  P['情景应变'].push({type:'情景题',level:'',text:`公司新政策对部分${C}明显不利，有个客户当面质问你「是不是坑我」，而政策已经定了。你怎么回答？`,
+    probe:[`你会不会替客户向上争取？争到哪一步？`,`如果客户因此要终止合作，你怎么办？`],point:'立场平衡与沟通诚实度'});
+  P['情景应变'].push({type:'情景题',level:'',text:`你带的人（或同事）连续两个月没完成目标，还总找客观理由。你会怎么处理？请说清第一步和最后一步。`,
+    probe:[`如果他是老员工、跟老板关系好呢？`,`你判断一个人该不该留，看哪几个信号？`],point:'管理动作的一致性、辅导与取舍'});
+  /* --- 素质动机（行为STAR + 动机） --- */
+  ice.forEach(s=>{
+    P['素质动机'].push({type:'行为STAR',level:'',text:`请举一个具体例子说明你「${s}」：当时的情境是什么？你具体做了哪些动作？最后结果怎么样？`,
+      probe:[`这个例子里最难的是哪一步？`,`如果当时没有人配合你，你会怎么办？`,`这件事如果没做好，损失会有多大？`],
+      point:`「${s}」的行为证据（STAR完整度、细节真实性与结果）`});
+  });
+  if(!ice.length)P['素质动机'].push({type:'行为STAR',level:'',text:'请举一个你在压力下坚持把事做完的具体例子：情境、你的动作、结果分别是什么？',probe:['最难的是哪一步？','如果重来你会怎么做？'],point:'抗压与坚持的行为证据'});
+  P['素质动机'].push({type:'行为STAR',level:'',text:'过去一年你最有成就感的一件事是什么？为什么是它，而不是别的？',
+    probe:['这件事里你付出了什么别人看不到的东西？','成就感更多来自结果，还是来自别人的认可？'],point:'内在驱动力与价值取向'});
+  P['素质动机'].push({type:'行为STAR',level:'',text:'讲一次你被人明确否定或遭遇挫折的经历：你当时最真实的反应是什么？后来怎么处理的？',
+    probe:['当时有没有情绪失控或想放弃？','这件事之后你改了什么做法？'],point:'挫折恢复力与自我认知的真实度'});
+  P['素质动机'].push({type:'行为STAR',level:'',text:'讲一次你需要跨部门或跨层级要到资源的经历。你用了什么方式？对方为什么愿意帮你？',
+    probe:['如果对方就是不配合，你还有第二方案吗？','这次之后你和对方的关系有变化吗？'],point:'影响力与协作方式'});
+  P['素质动机'].push({type:'素质动机',level:'',text:'你为什么要离开现在的平台？除了薪资，新机会你最在意哪三点？为什么是这三点？',
+    probe:['如果现公司给你加薪30%，你还会走吗？','你上一次离职的真实原因是什么，跟简历写的一样吗？'],point:'离职动机真实性与需求排序'});
+  P['素质动机'].push({type:'素质动机',level:'',text:`这个岗位每月大约有15天在县乡跑、常年出差见${C}，旺季节奏会很猛。以你现在的家庭和生活安排，实际情况能支撑吗？`,
+    probe:['过去最长连续出差多久？那时候家里什么反应？','如果连续两个月出差，你会怎么安排家里的事？'],point:'出差意愿的真实性与可持续性'});
+  P['素质动机'].push({type:'素质动机',level:'',text:'你期望的薪资结构和底线是多少？如果我们给的比预期低20%，你还会来吗？为什么？',
+    probe:['这个数字是怎么算出来的？','如果只有提成上不封顶、底薪低一些，你能接受吗？'],point:'薪酬预期的合理性与弹性'});
+  /* --- 价值观 --- */
+  P['价值观'].push({type:'动机价值观',level:'',text:`你怎么理解「把${C}服务好」这件事的价值？过去有没有为了客户自己吃过亏？请举个例子。`,
+    probe:['这个亏吃完了，你觉得值吗？','如果服务客户和完成公司指标冲突，你选哪个？'],point:'客户观与长期主义'});
+  P['价值观'].push({type:'动机价值观',level:'',text:`我们考核${M}，过程可能很枯燥，前3个月大概率看不到成果。你觉得你靠什么撑过去？`,
+    probe:['过去有没有一段看不到成果还硬扛的经历？','如果半年都没起色，你会怎么判断是自己不行还是市场不行？'],point:'耐心、韧性、归因方式'});
+  P['价值观'].push({type:'动机价值观',level:'',text:'如果上级要求你做一件你个人不太认同的事（不违反合规），你会怎么处理？请给出你真实的做法。',
+    probe:['你会先执行再提意见，还是先争到底？','如果争完还是让你做，你怎么办？'],point:'服从性与独立判断的平衡'});
+  P['价值观'].push({type:'动机价值观',level:'',text:'你希望和什么样的上级共事？如果上级和你风格完全相反，你会怎么相处？',
+    probe:['上一任上级你给他的评价是什么？','如果上级很少表扬你，会影响你的状态吗？'],point:'对上协作成熟度与自我驱动'});
+  P['价值观'].push({type:'动机价值观',level:'',text:'未来3年你希望自己成为什么样的人？如果这个岗位给不了你想要的，你会怎么办？',
+    probe:['这个目标和我们现在这个岗位的关系是什么？','如果两年内没升上去，你会走吗？'],point:'职业规划的清晰度与岗位匹配度'});
+  /* --- 压力抗压 --- */
+  P['压力抗压'].push({type:'压力题',level:'',text:'如果我说你刚才的回答太笼统、基本都是套路话，你会怎么重新回答？',
+    probe:['（停顿观察反应）你现在最想补充的是哪一点？','你觉得我刚才的质疑有道理吗？'],point:'情绪稳定性与自我修正能力'});
+  P['压力抗压'].push({type:'压力题',level:'',text:'这个岗位我们同时在看5个候选人。请给我一个必须录用你、而不是别人的理由。',
+    probe:['你说的这个优势，别人的简历上也有，你凭什么更强？','除了能力，你还有什么别人给不了的价值？'],point:'自我认知的锐度与表达攻击性'});
+  P['压力抗压'].push({type:'压力题',level:'',text:`你的资历看起来不错，但你的数据我没太看懂——${(lines(j.k_risk)[0]||'有几处口径不清')}。请你正面解释一下。`,
+    probe:['（不听解释，继续追问数据来源）你怎么证明？','如果我现在打电话核实，会听到什么？'],point:'面对质疑的诚实度与抗压表现'});
+  P['压力抗压'].push({type:'压力题',level:'',text:'如果入职后半年，我们发现你的实际产出和面试说的差距很大，你觉得问题最可能出在哪？',
+    probe:['那你觉得我们应该怎么防范这个风险？','你过去有没有类似「承诺没兑现」的经历？'],point:'风险自觉与承诺的可靠性'});
+  return P;
+}
+/* 难度分层：按「主轮次」梯度配置（初面基础 → 终面高） */
+const LEVEL_MATRIX={
+  '初面':{'专业题':'初面·基础','行为STAR':'初面·基础','素质动机':'初面·基础','动机价值观':'初面·基础','项目深挖':'复面·中','情景题':'复面·中','压力题':'复面·中'},
+  '复面':{'专业题':'复面·中','行为STAR':'复面·中','素质动机':'复面·中','动机价值观':'复面·中','项目深挖':'复面·中','情景题':'复面·中','压力题':'终面·高'},
+  'HR面':{'专业题':'初面·基础','行为STAR':'复面·中','素质动机':'复面·中','动机价值观':'复面·中','项目深挖':'复面·中','情景题':'复面·中','压力题':'终面·高'},
+  '终面':{'专业题':'复面·中','行为STAR':'终面·高','素质动机':'终面·高','动机价值观':'终面·高','项目深挖':'终面·高','情景题':'终面·高','压力题':'终面·高'}
+};
+function primaryRound(j){
+  const order=ROUNDS;
+  return j.rounds.slice().sort((a,b)=>order.indexOf(a)-order.indexOf(b))[0]||'复面';
+}
+function levelOf(q,j){
+  if(j.diff==='flat')return '中';
+  const p=primaryRound(j);
+  let lv=(LEVEL_MATRIX[p]&&LEVEL_MATRIX[p][q.type])||'复面·中';
+  if(j.diff==='hard')lv=lv==='初面·基础'?'复面·中':(lv==='复面·中'?'终面·高':lv);
+  return lv;
+}
+/* 按维度权重分配题量，向「重点考察方向」倾斜；池子不足时自动把余量分给其他维度，绝不重复出题 */
+function sample(pool,j,target){
+  const dims=j.dims.filter(d=>DIMS.includes(d));
+  if(!dims.length)return [];
+  const boost={};dims.forEach(d=>boost[d]=DEF_WEIGHT[d]||10);
+  lines(j.k_focus).forEach(f=>{
+    if(/业绩|数据|真实|结果|贡献/.test(f))boost['项目经验']+=10;
+    if(/出差|下沉|吃苦|意愿|稳定|离职/.test(f))boost['素质动机']+=10;
+    if(/团队|管理|带人|心智|协作/.test(f)){boost['情景应变']+=8;boost['价值观']+=6;}
+    if(/抗压|压力|挑战/.test(f))boost['压力抗压']+=10;
+    if(/专业|技能|经验|能力/.test(f))boost['专业技能']+=10;
+  });
+  const sum=Object.values(boost).reduce((a,b)=>a+b,0)||1;
+  const alloc={},queues={},avail={},take={};
+  dims.forEach(d=>{
+    alloc[d]=Math.max(2,Math.round(boost[d]/sum*target));
+    let q=(pool[d]||[]).filter(x=>j.types.includes(x.type));
+    if(!q.length)q=[...(pool[d]||[])];
+    queues[d]=q;avail[d]=q.length;take[d]=0;
+  });
+  let remaining=target;
+  dims.forEach(d=>{const t=Math.min(alloc[d],avail[d]);take[d]=t;remaining-=t;});
+  let guard=0;
+  while(remaining>0&&guard<300){
+    guard++;let any=false;
+    for(const d of dims){if(remaining<=0)break;if(take[d]<avail[d]){take[d]++;remaining--;any=true;}}
+    if(!any)break;
+  }
+  const out=[];
+  dims.forEach(d=>{queues[d].slice(0,take[d]).forEach(q=>out.push(Object.assign({},q,{dim:d})));});
+  return out.slice(0,target);
+}
+
+/* ================= 输出01 题集 ================= */
+let QSET=[];
+function genQuestions(silent){
+  const j=collect();if(!j)return;save();
+  const dims=j.dims.filter(d=>DIMS.includes(d));
+  if(!j.title||(!lines(j.hard).length&&!dims.length)){
+    $('qWarn').classList.add('show');$('qOutput').innerHTML='';return;
+  }
+  $('qWarn').classList.remove('show');
+  const pool=buildPool(j);
+  const target=+j.qcount||16;
+  QSET=sample(pool,j,target);
+  QSET.forEach((q,i)=>{q.no=i+1;q.level=levelOf(q,j);});
+  j.qs=QSET.map(q=>({no:q.no,dim:q.dim,type:q.type,level:q.level,text:q.text,probe:q.probe,point:q.point}));
+  save();
+  const grouped={};
+  QSET.forEach(q=>{(grouped[q.dim]=grouped[q.dim]||[]).push(q);});
+  const dimIntro={'专业技能':'看「能不能干」——技能的实操深度与判断标准','项目经验':'看「干掉过什么」——真实性与个人贡献边界','情景应变':'看「遇到事怎么办」——在岗情境下的决策与应变','素质动机':'看「愿不愿意干」——冰山以下的动机与行为习惯','价值观':'看「合不合得来」——长期共事的底层取向','压力抗压':'看「扛不扛得住」——高压下的稳定性与诚实度'};
+  let html=`<div class="block" style="border-left-color:var(--accent);">
+    <h4>📋 题本总览</h4>
+    <div class="muted" style="line-height:2;">
+      岗位：<b>${esc(j.title)}</b>　｜　职级：${esc(j.level)||'未填'}　｜　轮次：${j.rounds.join(' / ')||'未选'}（本套题本按 <b>${esc(primaryRound(j))}</b> 梯度分层）　｜　形式：${j.form.join('/')||'未选'}　｜　预计时长：${j.duration} 分钟　｜　面试官：${esc(j.interviewer)}　｜　人数：${esc(j.panel)||'未填'}<br>
+      考察维度：${dims.join(' · ')||'未选'}　｜　题量：<b>${QSET.length} 题</b>　｜　结构化偏好：${j.struct==='struct'?'结构化（统一题本）':'半结构化（题本+自由追问）'}　｜　难度分层：${{auto:'按轮次梯度',flat:'不分层',hard:'整体偏难'}[j.diff]}<br>
+      候选人：<b>${esc(j.k_name)||'未指定'}</b>${j.k_company?'（'+esc(j.k_company)+'）':''}　｜　分级：<span class="badge ${j.k_grade==='A'?'hi':j.k_grade==='B'?'mid':'lo'}">${j.k_grade} 级</span>　｜　${esc(j.k_source)||''}<br>
+      <span style="color:var(--accent);">${esc(styleTag(j))}</span>
+    </div></div>`;
+  Object.keys(grouped).forEach(d=>{
+    const arr=grouped[d];
+    html+=`<div class="dim-block"><div class="dim-head"><h4>${d}（${arr.length}题）</h4><span class="badge blue">${esc(dimIntro[d]||'')}</span></div>`;
+    arr.forEach(q=>{
+      html+=`<div class="q-item">
+        <div class="qt"><span class="q-num">${q.no}</span>${esc(styleWrap(q.text,j))}</div>
+        <div class="q-meta"><span class="badge gray">${esc(q.type)}</span><span class="badge ${q.level.includes('基础')?'hi':q.level.includes('高')?'lo':'mid'}">${esc(q.level)}</span><span class="badge violet">考察点：${esc(q.point)}</span></div>
+        ${j.follow==='yes'&&q.probe&&q.probe.length?`<div class="probe"><b>🔍 追问（按需选问，答不到细节就往下追）</b><br>${q.probe.map((p,k)=>`${k+1}. ${esc(p)}`).join('<br>')}</div>`:''}
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div class="muted mt10">※ 半结构化说明：题本为骨架保底，面试官可自由追问；每题括号内考察点为评分依据，不向候选人透露。<br>
+  ※ 本页题目与追问由规则引擎基于输入层生成，<b>提交使用前必须经面试官复核调整</b>（见「上游打通·合规·留痕」页）。</div>`;
+  $('qOutput').innerHTML=html;
+  if($('phTitle'))$('phTitle').textContent=`${j.title}｜${j.k_name||'候选人未指定'}（${j.k_grade}级）｜${primaryRound(j)}｜共 ${QSET.length} 题`;
+  const sel=$('scoreFilter');
+  if(sel)sel.innerHTML='<option value="all">全部题目（'+QSET.length+'题）</option>'+QSET.map(q=>`<option value="${q.no}">第${q.no}题 · ${esc(q.dim)} · ${esc(q.type)}</option>`).join('');
+  if(!silent){toast('已生成 '+QSET.length+' 道题（'+dims.length+'个维度）');}
+}
+
+/* ================= 输出02 评分标准 ================= */
+function anchorsFor(q){
+  const d=q.dim;
+  const good=`① 有具体情境（谁、什么时候、什么目标），不是抽象描述；<br>② 说清自己做了什么<b>具体动作</b>，动作可复述；<br>③ 关键判断给出「为什么这么想」的逻辑，而非只报结果；<br>④ 结果有数字或可比事实，能说清数据来源；<br>⑤ 主动给复盘或反例，知道自己哪里差点做砸。`;
+  const ok=`① 能讲清做了什么与大致结果，但细节偏概括；<br>② 个人贡献与团队/平台贡献有混淆，追问2-3轮后才能补出细节；<br>③ 结果能说个大概，缺口径或来源；<br>④ 复盘较浅，偏向"下次更努力"这类空话。`;
+  const bad=`① 只给结论或口号（"我很有责任心""结果不错"），举不出具体例子；<br>② 结果无数据、或数字前后矛盾；<br>③ 把功劳全归于自己，或全推给平台与他人；<br>④ 说不清自己的角色与动作，多次追问仍模糊；<br>⑤ 面对质疑立刻改口、随面试官意思调整说法。`;
+  let extra='';
+  if(d==='价值观')extra=`<br><b>价值观专项</b>：优秀者会说出"吃力不讨好但值得"的具体事；不合格者所有选择都偏向对自己短期最有利。`;
+  if(d==='压力抗压')extra=`<br><b>压力专项</b>：优秀者被质疑后仍稳定、能用事实回应；不合格者情绪外露、开始推责或过度讨好。`;
+  if(d==='专业技能')extra=`<br><b>专业专项</b>：优秀者能做到"讲过程 + 讲取舍 + 讲边界（什么情况下我不做）"；只会讲成功案例的按合格上限处理。`;
+  return {good:good+extra,ok,bad};
+}
+function genScore(){
+  const j=collect();if(!j)return;save();
+  if(!QSET.length&&j.qs&&j.qs.length){QSET=j.qs.map(q=>Object.assign({no:q.no,dim:q.dim,type:q.type,level:q.level,text:q.text,probe:q.probe,point:q.point}));}
+  if(!QSET.length){$('scoreWarn').classList.add('show');$('scoreOutput').innerHTML='';return;}
+  $('scoreWarn').classList.remove('show');
+  const f=($('scoreFilter')&&$('scoreFilter').value)||'all';
+  const list=f==='all'?QSET:QSET.filter(q=>String(q.no)===f);
+  let html=`<div class="block" style="border-left-color:var(--green);"><h4>🧭 全场统一打分尺度（3 级锚定）</h4>
+    <div class="muted" style="line-height:2;">评分统一按 <b>1-5 分</b>：<b>5</b>=超出预期（可作标杆）/ <b>4</b>=优秀 / <b>3</b>=合格（可录用下限）/ <b>2</b>=偏弱（需其他维度补）/ <b>1</b>=不合格。<br>
+    同一维度内所有题目按「行为锚」对位打分，<b>避免凭整体印象给分</b>；任何低于3分的判断必须写一句依据。</div></div>`;
+  list.forEach(q=>{
+    const a=anchorsFor(q);
+    html+=`<div class="dim-block">
+      <div class="dim-head"><h4>第${q.no}题 · ${esc(q.dim)}</h4><span class="badge gray">${esc(q.type)}</span><span class="badge blue">${esc(q.level)}</span></div>
+      <div style="font-size:13px;line-height:1.8;font-weight:bold;">${esc(q.text)}</div>
+      <div class="mt10" style="font-size:12.5px;line-height:1.9;">
+        <b style="color:var(--primary);">🎯 考察点：</b>${esc(q.point)}<br>
+        <b style="color:var(--primary);">📌 评分要点：</b>是否给出具体情境与个人动作 / 判断逻辑能否自洽 / 结果是否可验证 / 复盘是否真实（不需要正确答案，需要可信的思考过程）
+      </div>
+      <div class="anchor">
+        <div class="a-good"><b>5-4分 · 优秀</b>${a.good}</div>
+        <div class="a-ok"><b>3分 · 合格</b>${a.ok}</div>
+        <div class="a-bad"><b>2-1分 · 不合格</b>${a.bad}</div>
+      </div>
+      ${q.probe&&q.probe.length?`<div class="probe"><b>🔍 关键追问（用于验证是否真的做到）</b><br>${q.probe.map((p,k)=>`${k+1}. ${esc(p)}`).join('<br>')}</div>`:''}
+    </div>`;
+  });
+  html+=`<div class="muted mt10">※ 参考答案说明：行为面试类题目<b>没有标准答案</b>，评分锚定的是「思考过程的可信度」与「行为证据的完整度」；专业题如涉及硬知识，请面试官补充技术正解。</div>`;
+  $('scoreOutput').innerHTML=html;
+}
+
+/* ================= 输出03 定制追问 ================= */
+function renderCandSelect(){
+  const sel=$('candPick');if(!sel)return;
+  const v=sel.value;
+  sel.innerHTML='<option value="">—— 手动录入 ——</option>'+DB.candidates.map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(c.company)}·${c.role||''}）</option>`).join('');
+  if(v)sel.value=v;
+}
+function pickCand(){
+  const c=DB.candidates.find(x=>x.id==candPick.value);if(!c)return;
+  const j=cur();
+  j.k_name=c.name;j.k_company=(c.company||'')+(c.role?' · '+c.role:'');j.k_grade=c.grade||'B';j.k_source=c.source||j.k_source;
+  j.k_bg=c.bg||j.k_bg;j.k_risk=c.risk||j.k_risk;j.k_focus=c.focus||j.k_focus;
+  if(c.status==='onboard_open'||c.status==='active_looking'){}
+  fillForm();save();toast('已载入候选人「'+c.name+'」的筛选结论，请核对后保存');
+}
+function renderTailorTarget(){
+  const sel=$('tailorTarget');if(!sel)return;
+  const j=cur();
+  const opts=DB.candidates.map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(c.company)}）</option>`).join('');
+  sel.innerHTML=`<option value="cur">当前项目候选人：${esc(j?j.k_name:'—')||'（未填）'}</option>`+opts;
+}
+let TAILOR=null;
+function genTailor(){
+  const j=collect();if(!j)return;save();
+  const sel=$('tailorTarget');
+  let name=j.k_name,company=j.k_company,grade=j.k_grade,bg=j.k_bg,risk=j.k_risk,focus=j.k_focus,years=j.k_years;
+  if(sel&&sel.value!=='cur'){
+    const c=DB.candidates.find(x=>x.id==sel.value);
+    if(c){name=c.name;company=(c.company||'')+(c.role?' · '+c.role:'');grade=c.grade||'B';bg=c.bg||bg;risk=c.risk||risk;focus=c.focus||focus;}
+  }
+  const risks=lines(risk),focuses=lines(focus),projs=lines(bg).filter(x=>/项目|主导|负责|从0|推动|开拓/.test(x));
+  if(!name||(!risks.length&&!projs.length)){$('tailorWarn').classList.add('show');$('tailorOutput').innerHTML='';return;}
+  $('tailorWarn').classList.remove('show');
+  const C=cli(j),M=metric(j);
+  const strategy={A:'A级 · 重点推进 —— 追问以「深挖 + 适度挑战」为主：验证能力上限，同时观察被质疑时的稳定性。',
+    B:'B级 · 待验证 —— 追问以「验证 + 风险确认」为主：先确认关键经历真假与稳定性，再判断是否值得推进。',
+    C:'C级 · 快速判断 —— 追问以「效率优先」为主：只问2-3个决定性问题和1个硬性门槛，快速给出结论，不恋战。'}[grade]||'';
+  let html=`<div class="block" style="border-left-color:var(--violet);"><h4>👤 定制对象与策略</h4>
+    <div class="muted" style="line-height:2;">
+      候选人：<b>${esc(name)}</b>${company?'（'+esc(company)+'）':''}　｜　分级：<span class="badge ${grade==='A'?'hi':grade==='B'?'mid':'lo'}">${esc(grade)} 级</span>${years?'　｜　'+esc(years):''}<br>
+      <span style="color:var(--violet);">${esc(strategy)}</span>
+    </div></div>`;
+  /* A. 风险疑点闭环 */
+  html+=`<div class="dim-block" style="border-top-color:var(--red);"><div class="dim-head"><h4>① 简历疑点闭环追问（承接风险预审清单）</h4>
+    <span class="badge lo">逐条问透，不留白</span></div>`;
+  if(risks.length){
+    const tpl=(r)=>[
+      `关于「${r}」——请具体说明经过：当时的情况、你的选择理由，以及现在回头看你处理得怎么样？`,
+      `你说「${r}」这件事已经解决了，那我换一个角度问：如果同样的处境今天再来一次，你会怎么做？哪里会不一样？`,
+      `（压力式追问）我注意到「${r}」这一点，简历上没写。是不方便写，还是想等我们问？请正面回答。`,
+      `（核实式追问）关于「${r}」，如果你愿意提供一位可以核实这段经历的联系人，会是谁？他/她会怎么评价你在其中的表现？`,
+    ];
+    risks.forEach((r,i)=>{
+      html+=`<div class="q-item" style="border-left-color:var(--red);">
+        <div class="qt"><span class="q-num" style="background:var(--red);">R${i+1}</span>疑点：${esc(r)}</div>
+        <div class="probe"><b>🔍 定制追问链（一层比一层硬，按反应决定是否往下走）</b><br>${tpl(r).map((x,k)=>`${k+1}. ${esc(x)}`).join('<br>')}</div>
+        <div class="mt10" style="font-size:12px;color:var(--muted);">▸ 判定参考：能给出具体时间/数字/第三方视角 = 通过；回避、模糊、改口 = 记录并降级；主动承认不利事实反而加分。</div>
+      </div>`;
+    });
+  }else html+=`<div class="muted">未填写风险疑点。建议至少补充1-2条（如稳定性、数据口径、个人贡献），否则追问会偏泛。</div>`;
+  html+=`</div>`;
+  /* B. 项目经历个性化追问 */
+  html+=`<div class="dim-block" style="border-top-color:var(--accent);"><div class="dim-head"><h4>② 项目经历个性化追问（按简历逐条定制）</h4>
+    <span class="badge mid">验证真实性 + 迁移性</span></div>`;
+  if(projs.length){
+    projs.forEach((p,i)=>{
+      const brief=p.length>40?p.slice(0,40)+'…':p;
+      html+=`<div class="q-item" style="border-left-color:var(--accent);">
+        <div class="qt"><span class="q-num" style="background:var(--accent);">P${i+1}</span>简历项目：${esc(brief)}</div>
+        <div class="probe"><b>🔍 定制追问（STAR 四段各问一层）</b><br>
+        1. <b>情境</b>：这件事开始的时候，业务背景和你接手时的现状到底是什么？<br>
+        2. <b>任务</b>：目标是谁定的？数字是多少？你个人被考核的是哪一项？<br>
+        3. <b>动作</b>：抛开"我负责……"，请说 3 个只有你做了、别人没做的具体动作。<br>
+        4. <b>结果</b>：最终数字是多少？这个数字怎么算出来的、谁能证明？<br>
+        5. <b>反事实</b>：如果这段经历重来一次，你会砍掉哪个动作、加上哪个动作？</div>
+        <div class="mt10" style="font-size:12px;color:var(--muted);">▸ 迁移性追问：这件事里最有用的方法是什么？如果换到我们这里的${C}和${M}上，你会怎么改？</div>
+      </div>`;
+    });
+  }else html+=`<div class="muted">未填写项目经历。可在「出题需求」页的「简历背景摘要+关键项目经历」中，每行写一条，系统会自动生成 STAR 深挖链。</div>`;
+  html+=`</div>`;
+  /* C. 重点考察方向定制 */
+  html+=`<div class="dim-block" style="border-top-color:var(--blue);"><div class="dim-head"><h4>③ 本次重点考察方向 · 定向追问</h4><span class="badge blue">决定是否推进</span></div>`;
+  if(focuses.length){
+    focuses.forEach((f,i)=>{
+      html+=`<div class="q-item" style="border-left-color:var(--blue);"><div class="qt"><span class="q-num" style="background:var(--blue);">F${i+1}</span>重点：${esc(f)}</div>
+      <div class="probe"><b>🔍 定向追问</b><br>1. 围绕「${esc(f)}」，请举一个你最有力的证据（时间、数字、结果）。<br>2. 反向验证：有没有一次你在「${esc(f)}」上失败或被扣分的经历？当时你怎么处理？<br>3. 压力确认：如果我们的实际情况比你现在预想的更难（比如出差更频繁、前期更没成果），你还会来吗？</div></div>`;
+    });
+  }else html+=`<div class="muted">未填写重点考察方向。建议写 3 条（如业绩真实性、出差意愿、管理心智），追问会更有针对性。</div>`;
+  html+=`</div>`;
+  /* D. 收尾确认清单 */
+  html+=`<div class="block" style="border-left-color:var(--green);"><h4>✅ 面试官收尾确认清单（防漏问）</h4>
+    <div class="muted" style="line-height:2;">
+      □ 硬性门槛逐条确认过（学历/年限/行业/出差）　□ 每一项风险疑点都问过并留了记录　□ 至少问出 1 个具体数字并核过口径<br>
+      □ 离职原因与入职时间点说清了　□ 薪酬预期与底线问到了　□ 候选人提问环节答疑了　□ 下一步安排与时间承诺明确告知了
+    </div></div>`;
+  $('tailorOutput').innerHTML=html;
+  TAILOR=true;
+}
+
+/* ================= 输出04 打分卡 ================= */
+function calcWeights(j){
+  const dims=j.dims.filter(d=>DIMS.includes(d));
+  const w={};let sum=0;
+  dims.forEach(d=>{w[d]=(j.weights&&j.weights[d])||DEF_WEIGHT[d]||10;sum+=w[d];});
+  if(!sum)return w;
+  // 归一化到100（显示取整，最后一项补差）
+  let acc=0;const keys=Object.keys(w);
+  keys.forEach((k,i)=>{const v=i===keys.length-1?(100-acc):Math.round(w[k]/sum*100);w[k]=v;acc+=v;});
+  return w;
+}
+function genScorecard(){
+  const j=collect();if(!j)return;save();
+  const dims=j.dims.filter(d=>DIMS.includes(d));
+  if(!dims.length){$('scorecardOutput').innerHTML='<div class="warn show">请先在「出题需求」页勾选考察维度。</div>';return;}
+  const w=calcWeights(j);
+  if($('phTitle2'))$('phTitle2').textContent=`${j.title}｜${j.k_name||'——'}｜${j.rounds.join('/')||'——'}｜${new Date().toLocaleDateString('zh-CN')}`;
+  const key=LS+'_sc_'+j.id;
+  const saved=DB.sc[key]||{scores:{},notes:{},total:''};
+  let html=`<div class="block" style="border-left-color:var(--primary);"><h4>📝 面试评价打分卡</h4>
+    <div class="muted" style="line-height:2;">
+      候选人：<b>${esc(j.k_name)||'——'}</b>　岗位：<b>${esc(j.title)||'——'}</b>　轮次：${j.rounds.join('/')||'——'}　面试官：${esc(j.interviewer)}　日期：${new Date().toLocaleDateString('zh-CN')}<br>
+      评分：1-5 分（5=超出预期 / 4=优秀 / 3=合格下限 / 2=偏弱 / 1=不合格）；<b>任一维度低于3分必须写依据</b>。权重可改，自动汇总。
+    </div></div>
+    <div style="overflow-x:auto;"><table id="scTable">
+    <thead><tr><th style="width:110px;">维度</th><th style="width:80px;">权重%</th><th style="width:210px;">评分（点选）</th><th style="width:90px;">得分</th><th>评价记录 / 关键证据（必填扣分依据）</th></tr></thead><tbody>`;
+  dims.forEach(d=>{
+    const sc=saved.scores[d]||0;
+    html+=`<tr>
+      <td><b>${esc(d)}</b><br><span class="muted" style="font-size:11px;">${esc({'专业技能':'技能实操深度','项目经验':'真实性/贡献边界','情景应变':'在岗决策应变','素质动机':'动机与行为习惯','价值观':'底层取向匹配','压力抗压':'高压稳定性'}[d]||'')}</span></td>
+      <td><input class="mini-num" type="number" min="0" max="100" value="${w[d]}" onchange="setWeight('${d}',this.value)"></td>
+      <td><div class="rate">${[1,2,3,4,5].map(n=>`<span class="${sc===n?'on':''}" onclick="setScore('${d}',${n},this)">${n}</span>`).join('')}</div></td>
+      <td><b id="sd_${d}">${sc?((sc*w[d])/5).toFixed(1):'—'}</b></td>
+      <td><input class="mini-input" placeholder="例：讲清了3个具体动作，但结果口径说不清，扣2分" value="${esc(saved.notes[d]||'')}" onchange="setNote('${d}',this.value)"></td>
+    </tr>`;
+  });
+  const total=Object.keys(saved.scores).reduce((s,d)=>{const v=saved.scores[d]||0;return s+v*(w[d]||0);},0)/5;
+  html+=`<tr style="background:var(--primary-light);"><td colspan="3" style="text-align:right;"><b>综合得分（加权）</b></td><td colspan="2"><b id="scTotal" style="font-size:16px;color:var(--primary);">${dims.some(d=>saved.scores[d])?total.toFixed(1)+' / 100':'— / 100'}</b> <span id="scVerdict" class="badge ${total>=80?'hi':total>=65?'mid':'lo'}" style="${dims.some(d=>saved.scores[d])?'':'display:none;'}">${total>=80?'建议推进':total>=65?'待定/复看':'不建议推进'}</span></td></tr>
+    </tbody></table></div>
+    <div class="grid2" style="margin-top:12px;">
+      <div><label>一句话总评</label><textarea id="scSummary" rows="2" placeholder="例：业务能力扎实、数据口径偏虚；出差意愿需进一步确认。">${esc(saved.total||'')}</textarea></div>
+      <div><label>下一步建议</label><textarea id="scNext" rows="2" placeholder="例：安排终面 + 电话核实上一份工作的业绩口径。">${esc(saved.next||'')}</textarea></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveScorecard()">💾 保存本次评分</button>
+    <button class="btn btn-ghost" onclick="doPrint()">🖨 打印带走</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportScorecard()">⬇ 导出评分CSV</button>
+    <div class="block mt10" style="border-left-color:var(--amber);">
+      <h4>🔎 分数不代表结论，请写清三件事</h4>
+      <div class="muted" style="line-height:2;">① 最有力的正面证据（哪个维度哪件事）；② 最大风险点（若录用，最可能出问题的环节）；③ 需要下一次面试验证的问题清单。</div>
+    </div>`;
+  $('scorecardOutput').innerHTML=html;
+}
+function scKey(){const j=cur();return LS+'_sc_'+j.id;}
+function scData(){const k=scKey();if(!DB.sc[k])DB.sc[k]={scores:{},notes:{},total:'',next:''};return DB.sc[k];}
+function setScore(d,n,el){
+  const d0=scData();d0.scores[d]=n;
+  el.parentNode.querySelectorAll('span').forEach(s=>s.classList.remove('on'));el.classList.add('on');
+  const j=cur();const w=calcWeights(j)[d]||0;
+  $('sd_'+d).textContent=((n*w)/5).toFixed(1);
+  const total=Object.keys(d0.scores).reduce((s,x)=>s+(d0.scores[x]||0)*(calcWeights(j)[x]||0),0)/5;
+  $('scTotal').textContent=total.toFixed(1)+' / 100';
+  const v=$('scVerdict');v.style.display='';v.textContent=total>=80?'建议推进':total>=65?'待定/复看':'不建议推进';
+  v.className='badge '+(total>=80?'hi':total>=65?'mid':'lo');
+  save();
+}
+function setNote(d,v){scData().notes[d]=v;save();}
+function setWeight(d,v){
+  const j=cur();j.weights=j.weights||{};j.weights[d]=+v||0;save();
+  const w=calcWeights(j);const d0=scData();
+  const total=Object.keys(d0.scores).reduce((s,x)=>s+(d0.scores[x]||0)*(w[x]||0),0)/5;
+  $('scTotal').textContent=(Object.keys(d0.scores).length?total.toFixed(1):'—')+' / 100';
+  toast('权重已更新（已重新归一化到100%）');
+}
+function saveScorecard(){
+  const d0=scData();d0.total=$('scSummary').value.trim();d0.next=$('scNext').value.trim();
+  const j=cur();d0.time=new Date().toLocaleString('zh-CN');d0.job=j.name;
+  save();toast('已保存本次评分');
+  DB.reviews.unshift(`【${d0.time}】${j.name} · ${j.k_name||'候选人'} 完成面试评分，综合 ${$('scTotal').textContent.trim()}`);
+  save();renderReviews();
+}
+function resetScorecard(){
+  askConfirm('确定清空当前项目的评分与评价记录？只影响这一场面试的打分，不影响题本与题库。',()=>{
+    DB.sc[scKey()]={scores:{},notes:{},total:'',next:''};save();genScorecard();toast('已清空评分');
+  });
+}
+function exportScorecard(){
+  const j=cur();const d0=scData();const dims=j.dims.filter(d=>DIMS.includes(d));const w=calcWeights(j);
+  const head='维度,权重%,评分(1-5),得分,评价记录\n';
+  const rows=dims.map(d=>[d,w[d],d0.scores[d]||'',d0.scores[d]?((d0.scores[d]*w[d])/5).toFixed(1):'','"'+(d0.notes[d]||'').replace(/"/g,'""')+'"'].join(',')).join('\n');
+  const extra='\n综合得分,'+($('scTotal').textContent.trim())+'\n候选人,'+(j.k_name||'')+'\n岗位,'+j.title+'\n总评,"'+($('scSummary').value||'').replace(/"/g,'""')+'"\n下一步,"'+($('scNext').value||'').replace(/"/g,'""')+'"';
+  downloadFile('面试评分_'+j.title+'_'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+head+rows+extra,'text/csv;charset=utf-8');
+}
+function renderScorecardIfAny(){/* 维度变化后不强刷，避免丢分 */}
+
+/* ================= 输出05 流程与时间 ================= */
+function genTimeline(){
+  const j=collect();if(!j)return;save();
+  const total=+j.duration||45;
+  const dims=j.dims.filter(d=>DIMS.includes(d));
+  const has=d=>dims.includes(d);
+  // 配比（百分比）
+  const blocks=[];
+  blocks.push({n:'开场破冰与说明',p:10,t:'自我介绍30秒 + 说明面试流程与时长 + 一句"今天主要想听真实的过程，不紧张"',s:'拉平心理状态'});
+  if(has('专业技能'))blocks.push({n:'专业能力提问',p:20,t:'按题本专业题顺序问，每题控制在3-5分钟；只问事实，不引导',s:'验证能不能干'});
+  if(has('项目经验'))blocks.push({n:'项目经历深挖',p:22,t:'挑简历里最有代表性的1-2个项目，STAR逐层下钻，重点问"只有你做了的动作"和结果口径',s:'验证真不真'});
+  if(has('情景应变'))blocks.push({n:'情景应变考察',p:12,t:'给一个在岗真实难题，要求说出具体动作排序；追问"如果第一步失败怎么办"',s:'验证遇事怎么办'});
+  if(has('素质动机'))blocks.push({n:'素质与动机考察',p:14,t:'行为STAR题为主，动机题重点问离职原因与出差意愿的真实性',s:'验证愿不愿干'});
+  if(has('价值观'))blocks.push({n:'价值观与匹配度',p:8,t:'聊客户观、对上协作、职业规划；观察是否与团队底层取向一致',s:'验证合不合得来'});
+  if(has('压力抗压'))blocks.push({n:'压力追问',p:8,t:'针对疑点直问、质疑数据口径，观察情绪稳定性和是否改口',s:'验证扛不扛得住'});
+  if(j.candask==='yes')blocks.push({n:'候选人提问 + 答疑',p:6,t:'把公司真实情况（出差强度、考核、晋升）说清，不做过度承诺',s:'双向了解、降低入职落差'});
+  blocks.push({n:'收尾与下一步说明',p:5,t:'反馈时间承诺 + 下一步安排 + 感谢；不现场承诺结果',s:'留好体验、闭环'});
+  const sumP=blocks.reduce((s,b)=>s+b.p,0);
+  blocks.forEach(b=>{b.min=Math.max(1,Math.round(b.p/sumP*total));});
+  // 修正总偏差
+  let diff=total-blocks.reduce((s,b)=>s+b.min,0);
+  blocks[1].min+=diff;
+  const C=cli(j),M=metric(j),S=scene(j);
+  let html=`<div class="block" style="border-left-color:var(--blue);"><h4>⏱ 单场流程配比（按 ${total} 分钟自动分配）</h4>
+    <div class="timeline">${blocks.map(b=>`<div class="tl-item"><div class="tl-bar"><b>${esc(b.n)}</b><span>${b.min} 分钟</span></div></div>`).join('')}</div>
+    <div style="overflow-x:auto;"><table>
+      <thead><tr><th style="width:150px;">环节</th><th style="width:70px;">时长</th><th>做什么 / 话术要点</th><th style="width:120px;">目的</th></tr></thead>
+      <tbody>${blocks.map(b=>`<tr><td><b>${esc(b.n)}</b></td><td>${b.min} 分钟</td><td>${esc(b.t)}</td><td class="muted">${esc(b.s)}</td></tr>`).join('')}</tbody>
+    </table></div>
+    <div class="muted mt10">※ 单题超时预警：任一题超过 <b>${Math.max(4,Math.round(total/8))} 分钟</b>仍未问到具体动作，立即收口换题——不要用一场面试只问透一道题。</div></div>`;
+
+  html+=`<div class="grid2">
+    <div class="block" style="border-left-color:var(--green);"><h4>🎬 开场话术（照着说）</h4>
+      <div style="font-size:12.5px;line-height:1.9;white-space:pre-wrap;">「${esc(j.k_name)||'你好'}，我是${esc(j.interviewer)}，今天大约占用你 ${total} 分钟。
+先谢谢你过来（/抽出时间）。流程是这样：我先了解一下你的经历，中间会问得比较细，甚至可能追问几句，这不是质疑你，是想把事听清楚；后面留时间给你问我们。
+咱们就当一次业务交流，不用紧张，你怎么做的就怎么说，说得越具体越好。」</div>
+    <div class="muted mt10">要点：先降防御，再说明"会追问"的合理性；不要一上来就问薪资。</div></div>
+    <div class="block" style="border-left-color:var(--accent);"><h4>🎯 收尾话术 + 反馈承诺</h4>
+      <div style="font-size:12.5px;line-height:1.9;white-space:pre-wrap;">「今天聊得挺充分。关于结果：我们这边会在 <b>3-5 个工作日</b>内给你明确回复（无论是否推进都会告知，不吊着你）。
+如果有下一轮，是${esc((cur().rounds||[]).filter(r=>r!=='复面')[0]||'业务负责人终面')}，大概再过 3 天左右。
+你先别急着做决定，今天就当互相了解；如果你后面有新的想法或者要补充什么，随时联系我。祝顺利！」</div>
+    <div class="muted mt10">要点：<b>给明确时间承诺</b>、<b>不现场承诺录用</b>、说明后续环节；即使不推进也要给体面的反馈。</div></div>
+  </div>`;
+
+  html+=`<div class="block" style="border-left-color:var(--violet);"><h4>📞 各环节必须问到的"保底问题"（时间不够时优先问这些）</h4>
+    <div class="muted" style="line-height:2;">
+      1. 你上一份工作的实际职责是什么？和最初招你进去时的约定一样吗？<br>
+      2. 讲一个你从0做起来的事：哪个动作是只有你会做、别人不会的？<br>
+      3. 你手上最硬的${M}数字是多少？怎么算出来的、谁能证明？<br>
+      4. ${S}这种情况，你第一步会做什么？为什么要先做这个？<br>
+      5. 你为什么现在考虑换工作？如果现公司加薪留你，你走不走？<br>
+      6. 我们这边要长期出差见${C}、前期见效慢，你的实际情况能支撑吗？<br>
+      7. 你期望的薪资结构和底线是多少？<br>
+      8. 你还有什么想问我们的？（观察他关心什么）
+    </div></div>`;
+  html+=`<div class="muted">※ 时间分配是按题量与轮次自动估算的参考值，请面试官按候选人节奏微调；<b>宁可少问两题，也要把关键经历问透。</b></div>`;
+  $('timelineOutput').innerHTML=html;
+}
+
+/* ================= P6 题库 ================= */
+function renderBankStats(){
+  const cs=DB.candidates;const b=DB.bank;
+  const byDim={};b.forEach(x=>byDim[x.dim]=(byDim[x.dim]||0)+1);
+  $('bankStats').innerHTML=`<div class="stat sT"><b>${b.length}</b><span>题库题目总量</span></div>`+
+    DIMS.map(d=>`<div class="stat"><b>${byDim[d]||0}</b><span>${d}</span></div>`).join('')+
+    `<div class="stat"><b>${DB.jobs.length}</b><span>出题项目</span></div>`+
+    `<div class="stat"><b>${cs.length}</b><span>候选人档案</span></div>`;
+  const sel=$('bk_dim');
+  if(sel&&!sel.options.length)sel.innerHTML=DIMS.map(d=>`<option>${d}</option>`).join('');
+}
+function renderBank(){
+  renderBankStats();
+  $('bankTable').querySelector('tbody').innerHTML=DB.bank.length?DB.bank.map((x,i)=>`
+    <tr><td>${esc(x.dim)}</td><td><span class="badge gray">${esc(x.type)}</span></td><td>${esc(x.level||'复面·中')}</td>
+    <td style="max-width:320px;">${esc(x.text)}</td><td class="muted" style="max-width:200px;">${esc(x.point||'')}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="delBankItem(${i})">删除</button></td></tr>`).join(''):'<tr><td colspan="6" class="muted">题库为空。可在「结构化面试题集」页点击「全部存入题库」，或在此手动添加。</td></tr>';
+}
+function addBankItem(){
+  const t=$('bk_text').value.trim();if(!t){toast('请填写题目正文');return;}
+  DB.bank.unshift({dim:$('bk_dim').value,type:$('bk_type').value,level:$('bk_level').value,text:t,point:$('bk_point').value.trim(),time:new Date().toLocaleString('zh-CN')});
+  save();renderBank();$('bk_text').value=$('bk_point').value='';toast('已加入题库');
+}
+function delBankItem(i){DB.bank.splice(i,1);save();renderBank();}
+function saveQuestionsToBank(){
+  if(!QSET.length){toast('请先生成题集');return;}
+  const j=cur();
+  let n=0;
+  QSET.forEach(q=>{
+    if(DB.bank.some(b=>b.text===q.text))return;
+    DB.bank.push({dim:q.dim,type:q.type,level:q.level,text:q.text,point:q.point,time:new Date().toLocaleString('zh-CN'),from:j?j.name:''});n++;
+  });
+  save();renderBank();toast('已存入题库 '+n+' 题（重复题已跳过）');
+}
+function clearBank(){
+  if(!DB.bank.length){toast('题库本来就是空的');return;}
+  askConfirm('确定清空题库全部 '+DB.bank.length+' 道题？建议先「导出题库CSV」备份。',()=>{DB.bank=[];save();renderBank();toast('题库已清空');});
+}
+function exportBankCSV(){
+  if(!DB.bank.length){toast('题库为空');return;}
+  const head='维度,题型,难度,题目,考察点,来源项目,入库时间\n';
+  const rows=DB.bank.map(x=>[x.dim,x.type,x.level,x.text,x.point,x.from||'',x.time||''].map(v=>`"${(v||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  downloadFile('面试题库_'+new Date().toISOString().slice(0,10)+'.csv','\ufeff'+head+rows,'text/csv;charset=utf-8');
+}
+
+/* ================= P7 上游/合规/留痕 ================= */
+function importUpstream(){
+  const txt=$('upstreamPaste').value.trim();if(!txt){toast('请先粘贴内容');return;}
+  const j=cur();if(!j){toast('请先新建项目');return;}
+  let hard=[],plus=[],ice=[],risk=[],focus=[],proj=[];
+  try{
+    const o=JSON.parse(txt);
+    const arr=v=>Array.isArray(v)?v:lines(v||'');
+    hard=arr(o.hard||o.必备技能);plus=arr(o.plus||o.加分项);ice=arr(o.iceberg||o.素质||o.冰山);
+    risk=arr(o.risk||o.疑点||o.风险);focus=arr(o.focus||o.重点);proj=arr(o.project||o.项目||o.bg);
+    if(o.title)j.title=o.title;if(o.portrait||o.jd)j.portrait=o.portrait||o.jd;
+    if(o.level)j.level=o.level;if(o.client)j.client=o.client;if(o.metric)j.metric=o.metric;
+    if(o.name)j.k_name=o.name;if(o.company)j.k_company=o.company;if(o.grade)j.k_grade=o.grade;
+  }catch(e){
+    let c2=null;
+    lines(txt).forEach(l=>{
+      const t=l.replace(/^[-·•\d.、\s]+/,'').trim();
+      if(/^(必备|硬性|硬条件|必须|技能要求)/.test(t))c2='h';
+      else if(/^(优先|加分|软性|可选)/.test(t))c2='p';
+      else if(/^(冰山|素质|动机|性格)/.test(t))c2='i';
+      else if(/^(风险|疑点|预警|关注)/.test(t))c2='r';
+      else if(/^(重点|考察方向|建议考察|注意)/.test(t))c2='f';
+      else if(/^(项目|经历)/.test(t))c2='j';
+      else if(t){
+        const bucket={h:hard,p:plus,i:ice,r:risk,f:focus,j:proj}[c2];
+        if(bucket)bucket.push(t);
+      }
+    });
+  }
+  const merge=(old,add)=>[...new Set([...lines(old),...add])].join('\n');
+  j.hard=merge(j.hard,hard);j.plus=merge(j.plus,plus);j.iceberg=merge(j.iceberg,ice);
+  j.k_risk=merge(j.k_risk,risk);j.k_focus=merge(j.k_focus,focus);
+  if(proj.length)j.k_bg=merge(j.k_bg,proj);
+  fillForm();save();
+  $('upstreamOk').classList.add('show');setTimeout(()=>$('upstreamOk').classList.remove('show'),3500);
+  toast('已识别并回填到「出题需求」页，请核对后保存');
+}
+const COMPLIANCE=[
+ '不引导歧视性提问：禁止涉及婚育、性别、年龄、籍贯、民族、宗教、健康隐私（与岗位无关部分）',
+ '题目可考核：每道题都能对应到岗位要求或素质项，不为难而问、不夹带个人偏好',
+ '题目可验证：涉及经历与业绩的题目必须能通过追问或第三方核实，不只凭自述',
+ '题目可记录：每题的提问与回答要点、评分与依据当场记录，供复核与追溯',
+ '保护候选人隐私：简历、疑点、评分仅存本机，不向第三方上传、不在群聊传播',
+ 'AI出题必经人工复核：AI 生成的题目与评分标准，由面试官终审调整后才能上场面',
+ '不超范围：面试不承诺任何录用/薪资结果，不索取与前雇主保密相关的信息或资料'];
+function renderCompliance(){
+  const key=LS+'_compliance';const saved=JSON.parse(localStorage.getItem(key)||'[]');
+  $('complianceList').innerHTML=COMPLIANCE.map((c,i)=>`<div class="check-item"><input type="checkbox" ${saved[i]?'checked':''} onchange="toggleComp(${i},this)"><span>${esc(c)}</span></div>`).join('');
+}
+function toggleComp(i,el){const key=LS+'_compliance';const s=JSON.parse(localStorage.getItem(key)||'[]');s[i]=el.checked;localStorage.setItem(key,JSON.stringify(s));}
+function saveReviewNote(){
+  const t=$('reviewNote').value.trim();if(!t){toast('请填写复核内容');return;}
+  DB.reviews.unshift(`【${new Date().toLocaleString('zh-CN')}】${t}`);save();renderReviews();$('reviewNote').value='';toast('留痕已记录');
+}
+function renderReviews(){
+  $('reviewLog').innerHTML=DB.reviews.length?'<div class="hr"></div>'+DB.reviews.map(r=>`<div style="font-size:12.5px;padding:7px 0;border-bottom:1px dashed var(--border);">${esc(r)}</div>`).join(''):'';
+}
+function exportAllTxt(){
+  const j=cur();if(!j){toast('请先新建项目');return;}
+  const dims=j.dims.filter(d=>DIMS.includes(d));
+  let txt=`${j.name}\n生成时间：${new Date().toLocaleString('zh-CN')}\n岗位：${j.title}｜轮次：${j.rounds.join('/')}｜时长：${j.duration}分钟｜面试官：${j.interviewer}\n候选人：${j.k_name||'—'}（${j.k_grade}级）\n${'='.repeat(40)}\n\n【面试题集】\n`;
+  (j.qs||[]).forEach(q=>{txt+=`${q.no}. [${q.dim}/${q.type}/${q.level}] ${q.text}\n`;if(j.follow==='yes'&&q.probe)txt+=`   追问：${q.probe.join(' / ')}\n`;});
+  txt+=`\n【风险疑点追问】\n`+lines(j.k_risk).map((r,i)=>`R${i+1}. ${r}`).join('\n');
+  txt+=`\n\n【合规自查】\n`+COMPLIANCE.map(c=>'□ '+c).join('\n');
+  txt+=`\n\n【复核留痕】\n`+(DB.reviews.join('\n')||'（暂无）');
+  downloadFile('面试手册_'+j.title+'_'+new Date().toISOString().slice(0,10)+'.txt',txt,'text/plain;charset=utf-8');
+}
+
+/* ================= 弹层事件 ================= */
+$('modalOk').onclick=()=>{const f=__okCb;__okCb=null;$('modalMask').classList.remove('show');if(f)f();};
+$('modalCancel').onclick=modalClose;
+$('modalMask').onclick=e=>{if(e.target===$('modalMask'))modalClose();};
+
+/* ================= 导航 ================= */
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.p));
+
+/* ================= 初始化 ================= */
+if(!DB.jobs.length){DB.jobs.push(blankJob());DB.cur=0;}
+fillForm();renderBoxes();renderJobSelect();renderCandSelect();renderTailorTarget();renderBank();renderCompliance();renderReviews();
+if((DB.jobs[DB.cur]||{}).qs&&cur().qs.length){QSET=cur().qs.map(q=>Object.assign({},q));}
+</script>
+</body>
+</html>
