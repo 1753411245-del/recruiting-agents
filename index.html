@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招聘智能体系列 · Recruiting Agents</title>
+<style>
+:root{--primary:#1a3a6b;--accent:#d9822b;--bg:#f5f7fa;--card:#fff;--border:#e2e8f0;--text:#1f2937;--muted:#6b7280;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);padding:48px 24px;}
+header{max-width:1000px;margin:0 auto 8px;}
+header h1{color:var(--primary);font-size:26px;}
+header p{color:var(--muted);margin-top:8px;font-size:14px;line-height:1.8;}
+.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.tags span{background:#eef3fb;color:var(--primary);border:1px solid #d8e2f3;border-radius:12px;padding:3px 12px;font-size:12px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;max-width:1000px;margin:28px auto 0;}
+a.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-decoration:none;color:inherit;box-shadow:0 1px 3px rgba(15,23,42,.05);transition:border-color .15s;}
+a.card:hover{border-color:var(--accent);}
+a.card h3{color:var(--primary);margin-bottom:6px;font-size:16px;}
+a.card .d{font-size:13px;color:var(--muted);line-height:1.7;}
+a.card .num{display:inline-block;background:var(--accent);color:#fff;border-radius:8px;font-size:11px;padding:1px 8px;margin-bottom:8px;}
+footer{max-width:1000px;margin:36px auto 0;font-size:12px;color:var(--muted);line-height:1.9;border-top:1px solid var(--border);padding-top:16px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎯 招聘智能体系列</h1>
+  <p>一套纯前端、零依赖、零网络请求的招聘智能体工具。每个工具都是单个 HTML 文件，打开即用；<br>全部数据仅保存在你本机浏览器的 localStorage 中，不上传任何服务器。</p>
+  <div class="tags"><span>单文件 · 免安装</span><span>本地存储 · 隐私不出本机</span><span>合规红线内建</span><span>MIT 开源</span></div>
+</header>
+<div class="grid">
+  <a class="card" href="agents/jd-generator.html"><span class="num">01</span><h3>JD 生成智能体</h3><div class="d">输入岗位要素，输出对外版 + 内部版双 JD，内置 8 类合规风险检测与人才画像打分表。</div></a>
+  <a class="card" href="agents/resume-screener.html"><span class="num">02</span><h3>简历筛选智能体</h3><div class="d">硬门槛 → 一票否决 → 加分加权三层过滤，A/B/C 分级 + 风险预审 + 面试邀约方案 + 台账归档。</div></a>
+  <a class="card" href="agents/talent-sourcing.html"><span class="num">03</span><h3>人才寻访智能体</h3><div class="d">目标公司清单、人才地图、寻访话术与渠道盘点，支持演练数据载入。</div></a>
+  <a class="card" href="agents/interview-eval.html"><span class="num">04</span><h3>结构化面试评估报告</h3><div class="d">维度评分、STAR 追问记录、录用建议自动汇总成评估报告。</div></a>
+  <a class="card" href="agents/interview-questions.html"><span class="num">05</span><h3>AI 面试题生成智能体</h3><div class="d">按岗位 / 层级 / 考察维度生成结构化面试题与追问链。</div></a>
+  <a class="card" href="agents/recruiting-automation.html"><span class="num">06</span><h3>招聘流程自动化看板</h3><div class="d">招聘漏斗、关键指标、阶段流转数据看板。</div></a>
+  <a class="card" href="agents/business-canvas.html"><span class="num">07</span><h3>业务解码画布</h3><div class="d">四层业务解码 + 九格画布 + 招聘漏斗瓶颈分析 + 行动清单（农资行业示例）。</div></a>
+</div>
+<footer>
+  使用说明：点击卡片打开对应智能体；数据保存在本机浏览器，清除浏览器数据会重置工具。<br>
+  合规说明：所有工具内置歧视性标签检测，候选人隐私不出本机，AI 输出仅作辅助、须人工复核。工具不替代人工决策，不用于歧视性筛选。<br>
+  License: MIT ｜ 欢迎提 Issue / PR
+</footer>
+</body>
+</html>
