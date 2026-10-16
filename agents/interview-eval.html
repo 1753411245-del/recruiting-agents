@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通用结构化面试评估报告智能体</title>
+<style>
+:root{
+  --primary:#1a3a6b; --primary-light:#eef3fb; --accent:#d9822b; --accent-light:#fdf3e7;
+  --bg:#f5f7fa; --card:#ffffff; --border:#e2e8f0; --text:#1f2937; --muted:#6b7280;
+  --green:#16a34a; --green-light:#ecfdf3; --red:#dc2626; --red-light:#fef2f2;
+  --amber:#d97706; --amber-light:#fffbeb; --blue:#2563eb; --blue-light:#eff6ff;
+  --violet:#7c3aed; --violet-light:#f5f3ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+header{background:linear-gradient(135deg,#122a52,#1a3a6b 60%,#245092);color:#fff;padding:22px 32px;}
+header h1{font-size:22px;letter-spacing:1px;}
+header p{margin-top:6px;font-size:12.5px;opacity:.85;}
+.layer-tags{display:inline-flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.layer-tags span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);padding:3px 12px;border-radius:12px;font-size:12px;}
+nav{display:flex;gap:4px;background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:0;z-index:20;overflow-x:auto;}
+nav button{border:none;background:none;padding:13px 16px;font-size:14px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;}
+nav button.active{color:var(--primary);border-bottom-color:var(--accent);font-weight:bold;}
+nav button:hover{color:var(--primary);}
+main{max-width:1180px;margin:0 auto;padding:22px 24px 60px;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.card h3{font-size:15px;color:var(--primary);margin-bottom:4px;}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+label{display:block;font-size:12.5px;font-weight:bold;color:#374151;margin:10px 0 4px;}
+label .tip{font-weight:normal;color:var(--muted);font-size:11.5px;}
+textarea,input[type=text],input[type=number],select{width:100%;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fbfcfe;resize:vertical;}
+textarea:focus,input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,58,107,.1);}
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;margin:4px 4px 0 0;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:#245092;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-accent:hover{background:#c06f1e;}
+.btn-ghost{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+.btn-ghost:hover{background:var(--primary-light);}
+.btn-danger{background:#fff;color:var(--red);border:1px solid var(--red);}
+.btn-sm{padding:4px 10px;font-size:12px;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:bold;}
+.badge.hi{background:var(--green-light);color:var(--green);border:1px solid #a7f3c9;}
+.badge.mid{background:var(--amber-light);color:var(--amber);border:1px solid #fcd34d;}
+.badge.lo{background:var(--red-light);color:var(--red);border:1px solid #fca5a5;}
+.badge.gray{background:#f3f4f6;color:var(--muted);}
+.badge.blue{background:var(--blue-light);color:var(--blue);}
+.badge.violet{background:var(--violet-light);color:var(--violet);}
+.warn{background:var(--amber-light);border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.warn.show{display:block;}
+.ok{background:var(--green-light);border:1px solid #a7f3c9;color:#166534;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.ok.show{display:block;}
+.err{background:var(--red-light);border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:10px 14px;font-size:12.5px;margin:10px 0;display:none;}
+.err.show{display:block;}
+.block{border:1px solid var(--border);border-left:5px solid var(--primary);border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fff;}
+.block h4{font-size:13.5px;color:var(--primary);margin-bottom:6px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{font-size:11.5px;padding:2px 9px;border-radius:10px;background:var(--primary-light);color:var(--primary);cursor:pointer;}
+.chip.exclude{background:var(--red-light);color:var(--red);}
+.chip.plus{background:var(--green-light);color:var(--green);}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:var(--primary-light);color:var(--primary);text-align:left;padding:8px 10px;font-weight:bold;}
+td{border-top:1px solid var(--border);padding:8px 10px;vertical-align:top;}
+tr:hover td{background:#fafbfd;}
+.dim-block{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;background:#fff;border-top:4px solid var(--primary);}
+.dim-block.low{border-top-color:var(--red);}
+.dim-block.high{border-top-color:var(--green);}
+.dim-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.dim-head h4{font-size:14.5px;color:var(--primary);}
+.score-bar{display:flex;gap:5px;}
+.score-bar span{width:30px;height:30px;line-height:28px;text-align:center;border:1.5px solid var(--border);border-radius:6px;font-size:13px;cursor:pointer;background:#fff;font-weight:bold;}
+.score-bar span.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.score-bar span.on.s1{background:var(--red);border-color:var(--red);}
+.score-bar span.on.s2{background:#ea7317;border-color:#ea7317;}
+.score-bar span.on.s3{background:var(--amber);border-color:var(--amber);}
+.score-bar span.on.s4{background:#65a30d;border-color:#65a30d;}
+.score-bar span.on.s5{background:var(--green);border-color:var(--green);}
+.anchor{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;}
+.anchor div{border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.7;}
+.anchor .a-good{background:var(--green-light);border:1px solid #a7f3c9;}
+.anchor .a-ok{background:var(--amber-light);border:1px solid #fcd34d;}
+.anchor .a-bad{background:var(--red-light);border:1px solid #fca5a5;}
+.anchor b{display:block;margin-bottom:3px;}
+.evidence{background:#f8fafc;border-left:3px solid var(--accent);padding:7px 11px;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.85;margin-top:8px;}
+.evidence::before{content:"📎 证据引用：";color:var(--accent);font-weight:bold;}
+.kw-box{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:10px 14px;font-family:Consolas,monospace;font-size:12.5px;line-height:1.8;margin:8px 0;white-space:pre-wrap;word-break:break-all;}
+.copy-area{width:100%;min-height:150px;background:#fbfcfe;font-size:12.5px;line-height:1.8;font-family:inherit;}
+.muted{color:var(--muted);font-size:12px;}
+.mt10{margin-top:10px;}
+.hr{border:none;border-top:1px dashed var(--border);margin:14px 0;}
+.stat{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;min-width:100px;text-align:center;}
+.stat b{display:block;font-size:20px;color:var(--primary);}
+.stat span{font-size:11.5px;color:var(--muted);}
+.stat.sT b{color:var(--accent);}
+.stat.sG b{color:var(--green);}
+.stat.sR b{color:var(--red);}
+.rep-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px;}
+.rep-sec{border:1px solid var(--border);border-radius:10px;margin-bottom:14px;background:#fff;overflow:hidden;}
+.rep-sec>.rs-title{background:var(--primary-light);color:var(--primary);font-weight:bold;font-size:13.5px;padding:9px 14px;border-left:5px solid var(--primary);}
+.rep-sec>.rs-body{padding:12px 14px;font-size:13px;line-height:1.9;}
+.rs-body ul{padding-left:20px;}
+.rs-body li{margin:4px 0;}
+.q-quote{background:#f8fafc;border-left:3px solid var(--blue);padding:6px 11px;border-radius:0 6px 6px 0;font-size:12.5px;color:#334155;margin:5px 0;}
+.legal-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;font-size:12.5px;border-bottom:1px dashed var(--border);}
+.legal-item input{margin-top:3px;}
+.timeline{display:flex;gap:0;align-items:stretch;margin:12px 0;flex-wrap:wrap;}
+.tl-item{flex:1;min-width:120px;border-right:2px solid #fff;}
+.tl-bar{background:var(--primary-light);border-top:3px solid var(--primary);padding:8px;text-align:center;}
+.tl-bar b{display:block;font-size:12.5px;color:var(--primary);}
+.tl-bar span{font-size:11.5px;color:var(--muted);}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:9px 22px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:99;pointer-events:none;}
+.toast.show{opacity:.92;}
+.modal-mask{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-mask.show{display:flex;}
+.modal-box{background:#fff;border-radius:10px;padding:20px 22px;max-width:640px;width:100%;max-height:82vh;overflow:auto;box-shadow:0 12px 36px rgba(0,0,0,.22);}
+.modal-box textarea{margin-top:8px;min-height:220px;font-family:Consolas,monospace;}
+.print-head{display:none;}
+@media (max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}.anchor{grid-template-columns:1fr;}}
+@media print{
+  header,nav,footer,.no-print{display:none !important;}
+  body{background:#fff;font-size:12px;}
+  .panel{display:block !important;}
+  .panel:not(#p3) .card{display:none;}
+  .card{break-inside:avoid;box-shadow:none;border:none;padding:0;margin-bottom:10px;}
+  .rep-sec,.dim-block{break-inside:avoid;}
+  .print-head{display:block;margin-bottom:12px;border-bottom:2px solid #1a3a6b;padding-bottom:8px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧾 通用结构化面试评估报告智能体</h1>
+  <p>输入层：采集与读取 ｜ 输出层：交付物 ｜ 落地配套：产品与实施 —— 全流程本地运行，候选人信息不出本机，证据可追溯，人工复核终审</p>
+  <div class="layer-tags">
+    <span>输入01 面试题与评分卡</span><span>输入02 候选人回答记录</span><span>输入03 岗位JD与胜任力</span>
+    <span>输入04 简历与筛选结论</span><span>输入05 输出偏好配置</span>
+    <span>输出01 结构化评估报告</span><span>输出02 录用建议与评级</span><span>输出03 回答证据摘要</span>
+    <span>输出04 匹配度与对比</span><span>输出05 后续行动建议</span>
+    <span>配套01 上游智能体打通</span><span>配套02 评估标准统一</span><span>配套03 合规与隐私</span>
+    <span>配套04 证据可追溯</span><span>配套05 人工复核与留痕</span>
+  </div>
+</header>
+
+<nav id="nav">
+  <button class="active" data-p="p1">📥 评估输入（输入层）</button>
+  <button data-p="p2">📝 打分卡录入</button>
+  <button data-p="p3">📄 结构化评估报告</button>
+  <button data-p="p4">⚖️ 多候选人对比</button>
+  <button data-p="p5">📚 评估标准 · 合规 · 留痕</button>
+</nav>
+
+<main>
+<!-- ============ P1 输入层 ============ -->
+<div class="panel active" id="p1">
+  <div class="card">
+    <h3>评估项目选择</h3>
+    <div class="sub">一位候选人一场面试一份评估；以下输入层 5 项配置对当前项目生效</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:2;min-width:220px;">
+        <label>当前评估项目</label>
+        <select id="jobSelect" onchange="switchJob()"></select>
+      </div>
+      <button class="btn btn-primary" onclick="newJob()">＋ 新建评估项目</button>
+      <button class="btn btn-accent" onclick="loadDemo()">🎲 一键演练（载入示例候选人）</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportJob()">导出 JSON</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">导入 JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJob(this)">
+      <button class="btn btn-danger btn-sm" onclick="deleteJob()">删除当前项目</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入01 · 面试题与评分卡</h3>
+    <div class="sub">结构化题目、各维度评分标准与行为锚定、面试官现场打分记录 —— 评估的<b>度量衡</b></div>
+    <label>面试题本 / 评分卡内容 <span class="tip">（可直接粘贴「AI生成面试题智能体」的题本与打分卡，或上游打分表；自动读取，不重复录入）</span></label>
+    <textarea id="i_scorecard" rows="4" placeholder="例：Q1 请讲一个你从0开拓县域市场的经历（考察：市场开拓，权重20%，1-5分锚定见评分卡）&#10;Q2 农资赊销账期怎么管？（考察：专业知识）&#10;……"></textarea>
+    <div class="grid2">
+      <div><label>现场打分记录 <span class="tip">（面试官手记：Q编号 → 现场分/印象，粘贴即可）</span></label>
+        <textarea id="i_livescore" rows="3" placeholder="Q1 现场分4，讲故事有细节&#10;Q2 现场分3，账期概念清楚但无实操例子"></textarea></div>
+      <div><label>面试信息 <span class="tip">（轮次 / 面试官 / 时长）</span></label>
+        <input type="text" id="i_round" placeholder="复面 · 业务经理+HR 双人 · 45分钟 · 线下">
+        <label style="margin-top:8px;">面试日期</label><input type="text" id="i_date" placeholder="2026-10-15"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入02 · 候选人回答记录</h3>
+    <div class="sub">面试逐字稿 / 录音转写、关键回答、面试官现场笔记与印象 —— 评估的<b>原材料</b>，评分必须引用这里的内容</div>
+    <label>逐字稿 / 录音转写 <span class="tip">（支持整段粘贴；越完整，证据摘要越可信）</span></label>
+    <textarea id="i_transcript" rows="5" placeholder="（粘贴面试录音转写或逐字记录）"></textarea>
+    <div class="grid2">
+      <div><label>关键回答摘录 <span class="tip">（每行一条：Q编号 + 原话，报告会作为证据引用）</span></label>
+        <textarea id="i_answers" rows="3" placeholder="Q1「华中市场我头三个月跑了40多家店，前期基本不谈货，先帮店里理陈列」&#10;Q2「赊销要设红线，超过60天直接停货」"></textarea></div>
+      <div><label>面试官现场笔记与第一印象 <span class="tip">（客观记录为主；含主观印象时会触发合规提醒）</span></label>
+        <textarea id="i_notes" rows="3" placeholder="表达有条理，提到具体店名和数字&#10;谈薪时期望略高于预算&#10;（避免记：感觉这个人不太靠谱）"></textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入03 · 岗位JD与胜任力</h3>
+    <div class="sub">岗位要求、必备与优先技能、胜任力模型、录用合格线 —— 评估的<b>基准线</b></div>
+    <div class="grid3">
+      <div><label>岗位名称</label><input type="text" id="j_title" placeholder="市场销售（农资渠道）"></div>
+      <div><label>职级 / 汇报线</label><input type="text" id="j_level" placeholder="专员-经理级，向大区总监汇报"></div>
+      <div><label>录用合格线 <span class="tip">（加权总分低于此值降级处理）</span></label>
+        <select id="j_passline" style="padding:8px;font-size:13px;">
+          <option value="3.0">3.0 / 5.0（标准岗）</option>
+          <option value="3.5">3.5 / 5.0（重要岗位）</option>
+          <option value="4.0">4.0 / 5.0（核心岗位）</option>
+          <option value="2.5">2.5 / 5.0（可培养岗）</option>
+        </select></div>
+    </div>
+    <label>岗位职责 / 任职要求（JD 全文）</label>
+    <textarea id="j_req" rows="3" placeholder="例：负责县域农资渠道开拓与维护，线下拜访农资店老板，促成铺货与复购，考核铺货率与回款率"></textarea>
+    <div class="grid2">
+      <div><label>必备技能 / 硬性要求 <span class="tip">（每行一条，评分时逐条核对）</span></label>
+        <textarea id="j_hard" rows="3" placeholder="3年以上渠道|大客户销售经验&#10;农资|农化|化肥|种子行业背景&#10;可适应长期出差"></textarea></div>
+      <div><label>优先技能 / 加分项</label>
+        <textarea id="j_plus" rows="3" placeholder="有县域经销商资源&#10;农学|植保相关专业&#10;带过小团队"></textarea></div>
+    </div>
+    <label>胜任力模型 <span class="tip">（每行一条「能力名|权重%|一句话定义」，或直接用下方打分卡默认维度）</span></label>
+    <textarea id="j_model" rows="3" placeholder="市场开拓|25|从0到1打开新区域的能力&#10;行业知识|20|懂作物、懂产品、懂农资生意&#10;沟通建立信任|15|和店老板打成一片&#10;抗压执行|15|吃得住差旅与拒绝&#10;学习应变|10|新品种新政策上手快&#10;稳定性与动机|15|为什么来、能待多久"></textarea>
+  </div>
+
+  <div class="card">
+    <h3>输入04 · 简历与筛选结论</h3>
+    <div class="sub">候选人背景、A/B/C 分级、预审追问点、本次重点考察项 —— 报告里「风险与待核实」的来源</div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>姓名 / 代号</label><input type="text" id="k_name" placeholder="张建国 / 候选A"></div>
+      <div><label>当前公司 · 职位</label><input type="text" id="k_company" placeholder="某农化集团 · 省区经理"></div>
+      <div><label>筛选分级</label>
+        <select id="k_grade" style="padding:8px;font-size:13px;">
+          <option value="A">A 级 · 重点推进</option>
+          <option value="B" selected>B 级 · 待验证</option>
+          <option value="C">C 级 · 快速判断</option>
+        </select></div>
+    </div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>简历来源 / 筛选结论</label><input type="text" id="k_source" placeholder="Boss直聘投递 · 筛选智能体评分 78"></div>
+      <div><label>工作年限 / 稳定性</label><input type="text" id="k_years" placeholder="8年 · 近3年换2家"></div>
+      <div><label>面试官</label><input type="text" id="k_interviewer" placeholder="王经理 / 李HR"></div>
+    </div>
+    <label>简历背景摘要 + 关键项目经历 <span class="tip">（每行一条）</span></label>
+    <textarea id="k_bg" rows="3" placeholder="8年农化渠道销售，现任省区经理带6人&#10;项目：华中新市场从0开拓，2年做到年销3000万&#10;项目：县域经销商从37家扩到120家"></textarea>
+    <div class="grid2">
+      <div><label>预审疑点 / 待核实项 <span class="tip">（面试中未闭环的问题，会进入「后续行动建议」）</span></label>
+        <textarea id="k_risk" rows="3" placeholder="近3年换2家公司，稳定性存疑&#10;业绩数据口径不清（个人贡献vs平台）&#10;期望薪资高于预算20%"></textarea></div>
+      <div><label>本次重点考察项 <span class="tip">（打分时会重点提示）</span></label>
+        <textarea id="k_focus" rows="3" placeholder="业绩真实性&#10;能否长期出差下沉&#10;离职动机"></textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>输入05 · 输出偏好配置</h3>
+    <div class="sub">报告详细度、是否给录用建议、评级口径、汇报对象与语言风格</div>
+    <div class="grid4">
+      <div><label>报告详细度</label>
+        <select id="o_detail" style="padding:8px;font-size:13px;">
+          <option value="std" selected>标准（每维度评价+证据）</option>
+          <option value="brief">精简（一页纸结论版）</option>
+          <option value="deep">深度（含追问复盘与横向对比）</option>
+        </select></div>
+      <div><label>是否给录用建议</label>
+        <select id="o_recommend" style="padding:8px;font-size:13px;">
+          <option value="yes" selected>给出（推荐/备选/不推荐 + 理由与风险）</option>
+          <option value="score_only">只给分数与事实，不下结论</option>
+        </select></div>
+      <div><label>评级口径</label>
+        <select id="o_scale" style="padding:8px;font-size:13px;">
+          <option value="5" selected>5 分制（加权均分）</option>
+          <option value="100">百分制（换算）</option>
+          <option value="grade">等级制（A/B/C/D）</option>
+        </select></div>
+      <div><label>语言风格</label>
+        <select id="o_style" style="padding:8px;font-size:13px;">
+          <option value="pro" selected>客观专业（事实描述，引用原话）</option>
+          <option value="boss">汇报简洁（结论先行，给老板看）</option>
+          <option value="legal">审慎合规（每条结论附证据编号）</option>
+        </select></div>
+    </div>
+    <div class="grid2">
+      <div><label>汇报对象</label>
+        <select id="o_audience" style="padding:8px;font-size:13px;">
+          <option>业务负责人（用人经理）</option>
+          <option>HRD / 招聘负责人</option>
+          <option>老板 / 总经理</option>
+          <option>面试官小组（多人复核用）</option>
+        </select></div>
+      <div><label>评估报告编号 <span class="tip">（留痕审计用，默认自动生成）</span></label>
+        <input type="text" id="o_reportno" placeholder="自动生成，可改"></div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:14px;" onclick="saveAll(true)">💾 保存输入层</button>
+    <button class="btn btn-ghost" onclick="goto('p2')">下一步：打分卡录入 →</button>
+  </div>
+</div>
+
+<!-- ============ P2 打分卡 ============ -->
+<div class="panel" id="p2">
+  <div class="card">
+    <h3>评分卡总览 <span class="badge blue" id="dimCount"></span></h3>
+    <div class="sub">按考察维度逐项打分（1-5 分），每个分数尽量附「证据引用」与短评 —— 无证据的评分在报告里会被标注为「主观印象」</div>
+    <div class="stat-row" style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="stat"><b id="stTotal">—</b><span>加权总分</span></div>
+      <div class="stat sT"><b id="stMatch">—</b><span>岗位匹配度</span></div>
+      <div class="stat sG"><b id="stHigh">0</b><span>强项维度</span></div>
+      <div class="stat sR"><b id="stLow">0</b><span>短板维度</span></div>
+      <div class="stat"><b id="stDone">0/0</b><span>已评分</span></div>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn btn-primary btn-sm" onclick="addDim()">＋ 添加维度</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetDims()">恢复默认维度</button>
+      <button class="btn btn-accent" onclick="goto('p3')">生成评估报告 →</button>
+    </div>
+  </div>
+  <div id="dimList"></div>
+</div>
+
+<!-- ============ P3 报告 ============ -->
+<div class="panel" id="p3">
+  <div class="card no-print">
+    <h3>生成结构化评估报告</h3>
+    <div class="sub">输出01 结构化评估报告 · 输出02 录用建议与评级 · 输出03 回答证据摘要 · 输出04 匹配度 · 输出05 后续行动建议</div>
+    <button class="btn btn-primary" onclick="genReport()">⚡ 生成 / 刷新报告</button>
+    <button class="btn btn-ghost" onclick="copyReport()">📋 复制全文</button>
+    <button class="btn btn-ghost" onclick="downloadReport()">⬇ 下载 .md</button>
+    <button class="btn btn-ghost" onclick="doPrint()">🖨 打印 / 存 PDF</button>
+    <div class="warn" id="complianceWarn"></div>
+    <div class="err" id="scoreWarn"></div>
+  </div>
+  <div class="print-head"><b>结构化面试评估报告</b> <span class="muted" id="printMeta"></span></div>
+  <div id="reportArea"></div>
+</div>
+
+<!-- ============ P4 对比 ============ -->
+<div class="panel" id="p4">
+  <div class="card">
+    <h3>多候选人横向对比 <span class="muted">（输出04：多候选人同场/同岗位时）</span></h3>
+    <div class="sub">汇总所有评估项目：同一岗位的候选人按加权总分排序，强项/短板/结论一目了然</div>
+    <button class="btn btn-primary btn-sm" onclick="renderCompare()">🔄 刷新对比</button>
+    <button class="btn btn-ghost btn-sm" onclick="copyCompare()">📋 复制对比表</button>
+    <div class="mt10" id="compareArea"></div>
+  </div>
+</div>
+
+<!-- ============ P5 标准/合规/留痕 ============ -->
+<div class="panel" id="p5">
+  <div class="card">
+    <h3>配套02 · 评估标准统一（能力锚定词典）</h3>
+    <div class="sub">统一 1-5 分的行为锚定口径，降低不同面试官的主观偏差 —— 所有人用同一把尺子</div>
+    <div class="anchor">
+      <div class="a-good"><b>5 卓越 · 显著超出岗位要求</b>有可验证的突出成果与细节证据，能教别人；可直接对标更高一级岗位</div>
+      <div class="a-ok"><b>4 优秀 · 超出要求</b>成果具体可信、方法成体系，证据充分；岗位主要维度可直接胜任</div>
+      <div class="a-ok"><b>3 合格 · 达到要求</b>有做过且有基本证据，深度一般；需要在岗辅导/有人带</div>
+      <div class="a-bad"><b>2 偏弱 · 低于要求</b>只有概念没有实例，或证据前后矛盾；录用需显著降预期</div>
+      <div class="a-bad"><b>1 不合格 · 明显缺失</b>答非所问、无相关经验或与简历明显不符；该项为一票否决候选</div>
+    </div>
+    <div class="hr"></div>
+    <div class="check-item"><input type="checkbox" id="rule_gate" checked><span><b>硬门槛规则：</b>任一维度 ≤2 分 → 报告自动标记「主要风险」，录用建议最多给到「备选」；加权总分低于合格线 → 评级降一级</span></div>
+    <div class="check-item"><input type="checkbox" id="rule_evidence" checked><span><b>证据规则：</b>评分未附原话引用 → 该维度在报告中标注「⚠ 主观印象，待补充证据」</span></div>
+    <div class="check-item"><input type="checkbox" id="rule_focus" checked><span><b>重点项规则：</b>「重点考察项」对应维度 ≤3 分 → 自动进入「复试重点」清单</span></div>
+  </div>
+
+  <div class="card">
+    <h3>配套03 · 合规与隐私</h3>
+    <div class="sub">客观评价、不写歧视性结论；候选人数据分级权限与脱敏</div>
+    <label>敏感词 / 歧视性表述扫描 <span class="tip">（对现场笔记、评语与报告全文执行；命中即提示修改）</span></label>
+    <div class="kw-box" id="legalScan">点击「扫描当前项目」检查歧视性与主观臆断表述</div>
+    <button class="btn btn-ghost btn-sm" onclick="scanLegal()">🔍 扫描当前项目</button>
+    <div class="hr"></div>
+    <div class="check-item"><input type="checkbox" id="rule_priv" checked><span><b>隐私保护：</b>导出/分享报告时自动将姓名替换为代号（如 候选A），身份证号/手机号/家庭住址做脱敏</span></div>
+    <div class="check-item"><input type="checkbox" id="rule_object" checked><span><b>客观性：</b>结论只描述「行为-证据-影响」，不评价外貌、性格标签化、婚育状况等与岗位无关信息</span></div>
+    <div class="check-item"><input type="checkbox" id="rule_keep" checked><span><b>数据留存：</b>评估数据仅存本机 localStorage；候选人落选数据建议保留 6 个月后删除</span></div>
+  </div>
+
+  <div class="card">
+    <h3>配套05 · 人工复核与留痕</h3>
+    <div class="sub">AI 初评并给建议，HR 与业务终审确认；报告归档可审计</div>
+    <div class="grid3" style="align-items:end;">
+      <div><label>复核人（HR / 用人经理）</label><input type="text" id="r_by" placeholder="李HR"></div>
+      <div><label>终审结论</label>
+        <select id="r_result" style="padding:8px;font-size:13px;">
+          <option value="">—— 待复核 ——</option>
+          <option value="同意AI建议">同意 AI 建议</option>
+          <option value="上调">上调（AI偏保守）</option>
+          <option value="下调">下调（AI偏乐观）</option>
+          <option value="否决">否决（不录用）</option>
+        </select></div>
+      <div><label>复核意见</label><input type="text" id="r_note" placeholder="业绩已背调核实，同意推进 offer"></div>
+    </div>
+    <button class="btn btn-primary" onclick="confirmReview()">✅ 提交复核（写入留痕）</button>
+    <div class="hr"></div>
+    <label>审计日志 <span class="tip">（生成、修改、导出、复核全程留痕，可举证）</span></label>
+    <div id="logArea" style="max-height:220px;overflow:auto;"></div>
+    <button class="btn btn-ghost btn-sm" onclick="exportLog()">⬇ 导出审计日志</button>
+  </div>
+
+  <div class="card">
+    <h3>配套01 · 与上游智能体打通</h3>
+    <div class="sub">自动读取 JD 画像、面试题、打分卡与转写，不重复录入</div>
+    <table>
+      <tr><th>上游智能体</th><th>本智能体自动读取</th><th>录入方式</th></tr>
+      <tr><td>JD生成智能体 / 简历筛选智能体</td><td>岗位JD、必备/优先技能、候选人背景与A/B/C分级、预审疑点</td><td>粘贴到 输入03 / 输入04，或导入项目 JSON</td></tr>
+      <tr><td>AI生成面试题智能体</td><td>题本、考察维度与权重、行为锚定、打分卡</td><td>粘贴到 输入01；维度可一键同步为评分卡</td></tr>
+      <tr><td>录音转写工具</td><td>逐字稿、关键回答</td><td>粘贴到 输入02</td></tr>
+      <tr><td>本智能体 → 下游</td><td>评估报告 / 录用建议 / 证据摘要 → 归档、背调、offer审批</td><td>复制全文 / 下载 .md / 打印 PDF</td></tr>
+    </table>
+    <div class="ok" id="pipeOk"></div>
+  </div>
+</div>
+</main>
+
+<footer>
+  结构化面试评估报告智能体 · 本地运行版 —— 评分有锚定、结论有证据、过程有留痕、复核有终审。<br>
+  ⚠️ 合规提示：评估结论仅基于面试证据；不采集与岗位无关的个人信息；最终录用决定由人工做出，AI 仅供参考。
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-mask" id="modalMask">
+  <div class="modal-box">
+    <h3 id="modalTitle" style="color:var(--primary);">标题</h3>
+    <textarea id="modalText" class="copy-area"></textarea>
+    <div style="text-align:right;margin-top:10px;">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">关闭</button>
+      <button class="btn btn-primary btn-sm" onclick="modalCopy()">复制内容</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="askMask">
+  <div class="modal-box">
+    <h3 id="askMsg" style="color:var(--primary);font-size:14px;line-height:1.7;"></h3>
+    <textarea id="askInput" class="copy-area" style="display:none;"></textarea>
+    <div style="text-align:right;margin-top:10px;">
+      <button class="btn btn-ghost btn-sm" onclick="askCancel()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="askOk()">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 存储 ================= */
+var LS='iv_eval_projects_v1', LSC='iv_eval_config_v1';
+var jobs=[], curId=null;
+function load(){ try{jobs=JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){jobs=[];} curId=localStorage.getItem(LSC)||null; if(!jobs.length){jobs.push(blank('评估项目 1'));curId=jobs[0].id;} if(!jobs.find(j=>j.id===curId))curId=jobs[0].id; }
+function save(){ localStorage.setItem(LS,JSON.stringify(jobs)); localStorage.setItem(LSC,curId); }
+function uid(){ return 'j'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function now(){ var d=new Date(); function p(n){return (n<10?'0':'')+n;} return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); }
+function blank(name){ return {id:uid(),name:name,created:now(),
+  i_scorecard:'',i_livescore:'',i_round:'',i_date:'',
+  i_transcript:'',i_answers:'',i_notes:'',
+  j_title:'',j_level:'',j_passline:'3.0',j_req:'',j_hard:'',j_plus:'',j_model:'',
+  k_name:'',k_company:'',k_grade:'B',k_source:'',k_years:'',k_interviewer:'',k_bg:'',k_risk:'',k_focus:'',
+  o_detail:'std',o_recommend:'yes',o_scale:'5',o_style:'pro',o_audience:'业务负责人（用人经理）',o_reportno:'',
+  dims:defaultDims(),scores:{},report:'',confirm:null,logs:[{t:now(),a:'创建项目'}]}; }
+
+var FIELDS=['i_scorecard','i_livescore','i_round','i_date','i_transcript','i_answers','i_notes','j_title','j_level','j_passline','j_req','j_hard','j_plus','j_model','k_name','k_company','k_grade','k_source','k_years','k_interviewer','k_bg','k_risk','k_focus','o_detail','o_recommend','o_scale','o_style','o_audience','o_reportno','r_by','r_result','r_note'];
+
+function defaultDims(){ return [
+ {id:uid(),name:'市场开拓能力',weight:25,desc:'从0到1打开新区域、新客户的能力',good:'有完整从0到1案例，数字可验证，方法可复制',ok:'参与过开拓，有基本打法，缺独立操盘',bad:'只有维护客户经验，无开拓实例'},
+ {id:uid(),name:'行业与产品知识',weight:20,desc:'懂行业、懂产品、懂客户生意',good:'对产品/作物/渠道如数家珍，能给出专业建议',ok:'了解基本概念，深度一般',bad:'基本概念模糊，现学现答'},
+ {id:uid(),name:'沟通与建立信任',weight:15,desc:'表达清晰，能快速与客户建立信任',good:'表达有条理，案例体现共情与信任建立',ok:'沟通顺畅但缺说服力案例',bad:'表达混乱或对抗性沟通'},
+ {id:uid(),name:'抗压与执行',weight:15,desc:'吃得住差旅、拒绝与业绩压力',good:'有一线苦活经历且心态积极，有具体应对方式',ok:'能接受但例子单薄',bad:'明显回避出差/压力场景'},
+ {id:uid(),name:'学习与应变',weight:10,desc:'新知识上手快，突发情况反应得当',good:'有跨领域快速上手的真实例子',ok:'依赖培训，自驱学习少',bad:'固守旧经验，抵触新事物'},
+ {id:uid(),name:'稳定性与动机',weight:15,desc:'为什么来、能待多久、动机是否匹配',good:'动机与岗位/公司强匹配，规划清晰',ok:'动机一般，以薪资为主导',bad:'动机含糊或与岗位明显错配'}]; }
+
+/* ================= 导航/基础 ================= */
+function goto(pid){ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.p===pid));
+ document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===pid));
+ if(pid==='p4')renderCompare(); if(pid==='p2')renderDims(); }
+document.getElementById('nav').addEventListener('click',function(e){ if(e.target.dataset.p)goto(e.target.dataset.p); });
+function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+function openModal(title,text){ document.getElementById('modalTitle').textContent=title; document.getElementById('modalText').value=text; document.getElementById('modalMask').classList.add('show'); }
+function closeModal(){ document.getElementById('modalMask').classList.remove('show'); }
+function modalCopy(){ copyText(document.getElementById('modalText').value); }
+function copyText(s){ var ta=document.createElement('textarea'); ta.value=s; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');toast('已复制到剪贴板');}catch(e){toast('复制失败，请手动复制');} document.body.removeChild(ta); }
+/* iframe 预览环境禁用原生 confirm/prompt —— 统一走页内弹层 */
+var askCb=null;
+function askConfirm(msg,cb){ document.getElementById('askMsg').textContent=msg; var inp=document.getElementById('askInput'); inp.style.display='none'; askCb=cb; document.getElementById('askMask').classList.add('show'); }
+function askPrompt(msg,val,cb){ document.getElementById('askMsg').textContent=msg; var inp=document.getElementById('askInput'); inp.style.display='block'; inp.value=val; askCb=cb; document.getElementById('askMask').classList.add('show'); }
+function askOk(){ var v=document.getElementById('askInput').value; closeAsk(); if(askCb)askCb(true,v); }
+function askCancel(){ closeAsk(); if(askCb)askCb(false,''); }
+function closeAsk(){ document.getElementById('askMask').classList.remove('show'); askCb=null; }
+function doPrint(){ try{ window.print(); }catch(e){ toast('当前预览环境不支持打印，请在浏览器中打开后打印'); } }
+
+/* ================= 项目管理 ================= */
+function renderSelect(){ var s=document.getElementById('jobSelect'); s.innerHTML=''; jobs.forEach(j=>{ var o=document.createElement('option'); o.value=j.id; o.textContent=j.name+(j.scores&&Object.keys(j.scores).length?'（已评'+Object.keys(j.scores).length+'项）':''); if(j.id===curId)o.selected=true; s.appendChild(o); }); }
+function switchJob(){ saveAll(false); curId=document.getElementById('jobSelect').value; save(); loadAll(); }
+function newJob(){ saveAll(false); var n=jobs.length+1; jobs.push(blank('评估项目 '+n)); curId=jobs[jobs.length-1].id; save(); renderSelect(); loadAll(); toast('已新建项目'); }
+function deleteJob(){ var j=cur(); askConfirm('确定删除「'+j.name+'」？此操作不可恢复（建议先导出JSON备份）。',function(ok){ if(!ok)return;
+ jobs=jobs.filter(x=>x.id!==j.id); if(!jobs.length)jobs.push(blank('评估项目 1')); curId=jobs[0].id; save(); renderSelect(); loadAll(); toast('已删除'); }); }
+function cur(){ return jobs.find(j=>j.id===curId); }
+function autoName(){ var j=cur(); var n=(j.k_name||'未命名候选人')+' · '+(j.j_title||'未设岗位'); if(j.name!==n){j.name=n;} }
+
+function saveAll(notify){ var j=cur(); FIELDS.forEach(f=>{ var el=document.getElementById(f); if(el)j[f]=el.value; }); autoName(); save(); renderSelect(); if(notify)toast('已保存'); }
+function loadAll(){ var j=cur(); FIELDS.forEach(f=>{ var el=document.getElementById(f); if(!el)return; el.value=j[f]!==undefined?j[f]:''; });
+ if(!j.o_reportno)document.getElementById('o_reportno').value='IV-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+curId.slice(-4).toUpperCase();
+ renderSelect(); renderDims(); renderLog(); renderConfirmState(); }
+
+/* ================= 维度/打分 ================= */
+function renderDims(){ var j=cur(), box=document.getElementById('dimList'); box.innerHTML='';
+ document.getElementById('dimCount').textContent=j.dims.length+' 个维度';
+ j.dims.forEach(d=>{ var sc=(j.scores[d.id]||{}); var w=box.appendChild(document.createElement('div')); w.className='dim-block'+(sc.score===undefined?'':(sc.score<=2?' low':(sc.score>=4?' high':'')));
+  w.innerHTML='<div class="dim-head"><h4>'+esc(d.name)+'</h4><span class="badge gray">权重 '+d.weight+'%</span>'+
+   (sc.score!==undefined?'<span class="badge '+(sc.score<=2?'lo':(sc.score>=4?'hi':'mid'))+'">得分 '+sc.score+'</span>':'<span class="badge gray">未评分</span>')+
+   '<span style="flex:1"></span>'+
+   '<button class="btn btn-ghost btn-sm" onclick="editDim(\''+d.id+'\')">编辑</button>'+
+   '<button class="btn btn-danger btn-sm" onclick="delDim(\''+d.id+'\')">删除</button></div>'+
+   '<div class="muted">'+esc(d.desc||'')+'</div>'+
+   '<label style="margin-top:8px;">打分（1-5）</label><div class="score-bar" id="sb_'+d.id+'">'+
+   [1,2,3,4,5].map(n=>'<span class="'+(sc.score===n?('on s'+n):'')+'" onclick="setScore(\''+d.id+'\','+n+')">'+n+'</span>').join('')+'</div>'+
+   '<div class="grid2" style="margin-top:8px;">'+
+   '<div><label>证据引用 <span class="tip">（候选人原话 / 转写片段，报告直接引用）</span></label><textarea rows="2" oninput="setEvidence(\''+d.id+'\',this.value)" placeholder="例：「我头三个月跑了40多家店，先帮店里理陈列再谈货」">'+esc(sc.quote||'')+'</textarea></div>'+
+   '<div><label>面试官短评 <span class="tip">（客观描述行为与影响，避免主观臆断）</span></label><textarea rows="2" oninput="setComment(\''+d.id+'\',this.value)" placeholder="例：开拓案例有数字、有方法细节，可信度较高">'+esc(sc.comment||'')+'</textarea></div></div>'+
+   '<div class="anchor"><div class="a-good"><b>4-5 优秀</b>'+esc(d.good||'')+'</div><div class="a-ok"><b>3 合格</b>'+esc(d.ok||'')+'</div><div class="a-bad"><b>1-2 偏弱</b>'+esc(d.bad||'')+'</div></div>';
+ });
+ updateStats(); }
+function setScore(id,n){ var j=cur(); j.scores[id]=j.scores[id]||{}; j.scores[id].score=n; save(); renderDims(); toast('已评分 '+n+' 分'); }
+function setEvidence(id,v){ var j=cur(); j.scores[id]=j.scores[id]||{}; j.scores[id].quote=v; save(); }
+function setComment(id,v){ var j=cur(); j.scores[id]=j.scores[id]||{}; j.scores[id].comment=v; save(); }
+function addDim(){ var j=cur(); j.dims.push({id:uid(),name:'新维度',weight:10,desc:'',good:'',ok:'',bad:''}); save(); renderDims(); editDim(j.dims[j.dims.length-1].id); }
+function delDim(id){ var j=cur(); askConfirm('删除该维度及其评分？',function(ok){ if(!ok)return;
+ j.dims=j.dims.filter(d=>d.id!==id); delete j.scores[id]; save(); renderDims(); }); }
+function editDim(id){ var j=cur(); var d=j.dims.find(x=>x.id===id); var t='维度名：'+d.name+'\n权重%：'+d.weight+'\n定义：'+d.desc+'\n4-5分锚定：'+d.good+'\n3分锚定：'+d.ok+'\n1-2分锚定：'+d.bad;
+ askPrompt('按格式修改（不要改动字段名）：',t,function(ok,v){ if(!ok)return;
+ var L=v.split('\n').map(s=>s.trim()).filter(Boolean);
+ L.forEach(line=>{ var m=line.match(/^(维度名|权重%?|定义|4-5分锚定|3分锚定|1-2分锚定)[:：]\s*(.*)$/); if(!m)return; var k=m[1].replace('%',''),val=m[2];
+  if(k==='维度名')d.name=val; if(k==='权重')d.weight=parseInt(val)||d.weight; if(k==='定义')d.desc=val; if(k==='4-5分锚定')d.good=val; if(k==='3分锚定')d.ok=val; if(k==='1-2分锚定')d.bad=val; });
+ save(); renderDims(); }); }
+function resetDims(){ var j=cur(); askConfirm('恢复默认 6 维度？现有维度与评分将被清除。',function(ok){ if(!ok)return; j.dims=defaultDims(); j.scores={}; save(); renderDims(); }); }
+function updateStats(){ var j=cur(),sw=0,ws=0,h=0,l=0,done=0;
+ j.dims.forEach(d=>{ var s=j.scores[d.id]; if(s&&s.score!==undefined){ sw+=d.weight; ws+=s.score*d.weight; done++; if(s.score>=4)h++; if(s.score<=2)l++; } });
+ var total=sw?ws/sw:0;
+ document.getElementById('stTotal').textContent=sw?total.toFixed(2):'—';
+ document.getElementById('stMatch').textContent=sw?Math.round(total/5*100)+'%':'—';
+ document.getElementById('stHigh').textContent=h; document.getElementById('stLow').textContent=l;
+ document.getElementById('stDone').textContent=done+'/'+j.dims.length; }
+
+/* ================= 评级与报告 ================= */
+function calcRating(){ var j=cur(),sw=0,ws=0,minD=99,minName='',unscored=[];
+ j.dims.forEach(d=>{ var s=j.scores[d.id]; if(s&&s.score!==undefined){ sw+=d.weight; ws+=s.score*d.weight; if(s.score<minD){minD=s.score;minName=d.name;} } else unscored.push(d.name); });
+ if(!sw)return null;
+ var total=ws/sw, pass=parseFloat(cur().j_passline)||3.0;
+ var rec, recWhy;
+ if(total>=4.2&&minD>=3){rec='强烈推荐';recWhy='总分突出且无短板维度';}
+ else if(total>=3.5){rec='推荐录用';recWhy='整体达标';}
+ else if(total>=2.8){rec='备选观察';recWhy='整体中等，存在待验证项';}
+ else{rec='不推荐';recWhy='整体低于岗位要求';}
+ if(minD<=2&&rec!=='不推荐'){rec=total>=3.5?'备选观察':rec;recWhy='维度「'+minName+'」仅 '+minD+' 分，为主要风险，建议降级处理';}
+ if(total<pass&&rec!=='不推荐'){rec='备选观察';recWhy+='；加权总分 '+total.toFixed(2)+' 低于合格线 '+pass+'，已降级';}
+ return {total:total,pass:pass,minD:minD,minName:minName,unscored:unscored,rec:rec,recWhy:recWhy,match:Math.round(total/5*100)}; }
+
+function scaleFmt(r){ var j=cur(); if(j.o_scale==='100')return Math.round(r.total/5*100)+' 分（百分制）';
+ if(j.o_scale==='grade'){ var g=r.total>=4.2?'A':(r.total>=3.5?'B':(r.total>=2.8?'C':'D')); return g+' 级（'+r.total.toFixed(2)+'/5）'; }
+ return r.total.toFixed(2)+' / 5.0'; }
+
+function genReport(){ saveAll(false); var j=cur(), r=calcRating();
+ var ew=document.getElementById('scoreWarn'); ew.classList.remove('show');
+ if(!r){ ew.innerHTML='⚠ 尚未评分：请先到「打分卡录入」完成至少一个维度的评分。'; ew.classList.add('show'); goto('p2'); return; }
+ if(r.unscored.length){ ew.innerHTML='⚠ 以下维度未评分：<b>'+esc(r.unscored.join('、'))+'</b> —— 总分按已评维度加权计算，报告已标注。'; ew.classList.add('show'); }
+ j.logs.push({t:now(),a:'生成评估报告（总分 '+(Math.round(r.total/5*100))+'%，建议 '+r.rec+'）'});
+
+ var detail=j.o_detail, brief=detail==='brief';
+ var S='',H=[];
+ // 头部
+ H.push('# 结构化面试评估报告');
+ H.push('报告编号：'+(j.o_reportno||'IV-auto')+' ｜ 生成时间：'+now());
+ H.push('候选人：'+(j.k_name||'—')+'（'+(j.k_company||'—')+'）｜ 应聘岗位：'+(j.j_title||'—')+' ｜ 轮次：'+(j.i_round||'—'));
+ H.push('面试日期：'+(j.i_date||'—')+' ｜ 面试官：'+(j.k_interviewer||'—')+' ｜ 汇报对象：'+j.o_audience);
+ var repHtml='<div class="rep-sec"><div class="rs-title">📌 报告概览</div><div class="rs-body">'+
+  '<div class="rep-head">'+
+  '<div class="stat sT"><b>'+scaleFmt(r)+'</b><span>综合评级</span></div>'+
+  '<div class="stat"><b>'+r.match+'%</b><span>岗位匹配度</span></div>'+
+  '<div class="stat sG"><b>'+j.dims.filter(d=>{var s=j.scores[d.id];return s&&s.score>=4;}).length+'</b><span>强项维度</span></div>'+
+  '<div class="stat sR"><b>'+j.dims.filter(d=>{var s=j.scores[d.id];return s&&s.score<=2;}).length+'</b><span>短板/风险维度</span></div>'+
+  '<span class="badge '+(r.rec==='强烈推荐'||r.rec==='推荐录用'?'hi':(r.rec==='备选观察'?'mid':'lo'))+'" style="font-size:14px;padding:6px 16px;">'+r.rec+'</span>'+
+  '</div><div class="muted">'+esc(r.recWhy)+'</div></div></div>';
+
+ // 输出01 逐维度
+ repHtml+='<div class="rep-sec"><div class="rs-title">输出01 · 结构化评估（按考察维度逐项打分与评价）</div><div class="rs-body">';
+ var strengths=[],weak=[],txt1=[];
+ j.dims.forEach((d,i)=>{ var s=j.scores[d.id]||{}; var sc=s.score;
+  var cls=sc===undefined?'':(sc<=2?'low':(sc>=4?'high':''));
+  var inner='<div class="dim-head"><h4>'+(i+1)+'. '+esc(d.name)+'</h4><span class="badge gray">权重 '+d.weight+'%</span>'+
+   (sc===undefined?'<span class="badge gray">未评分</span>':'<span class="badge '+(sc<=2?'lo':(sc>=4?'hi':'mid'))+'">'+sc+' 分</span>')+
+   (j.k_focus&&j.k_focus.split('\n').some(f=>f.trim()&&d.name.indexOf(f.trim())>-1)?'<span class="badge violet">重点考察项</span>':'')+'</div>';
+  var ev='';
+  if(sc!==undefined){ var cmt=s.comment?'<div>面试官评价：'+esc(s.comment)+'</div>':'';
+   var quo=s.quote?'<div class="q-quote">「'+esc(s.quote)+'」</div>':'<div class="muted">⚠ 未附证据引用 —— 该评分目前属<b>主观印象</b>，建议回看逐字稿补充原话（配套04 证据可追溯）。</div>';
+   inner+=cmt+quo;
+   if(sc>=4){strengths.push(d.name+(s.quote?'':'（缺证据）'));txt1.push('【'+d.name+'】'+sc+'分（权重'+d.weight+'%）｜'+(s.comment||'')+(s.quote?'｜证据：「'+s.quote+'」':'｜⚠缺证据引用'));}
+   else if(sc<=2){weak.push(d.name+(s.quote?'':'（缺证据）'));txt1.push('【'+d.name+'】'+sc+'分（权重'+d.weight+'%）｜'+(s.comment||'')+(s.quote?'｜证据：「'+s.quote+'」':'｜⚠缺证据引用'));}
+   else{txt1.push('【'+d.name+'】'+sc+'分（权重'+d.weight+'%）｜'+(s.comment||'')+(s.quote?'｜证据：「'+s.quote+'」':''));} }
+  else{inner+='<div class="muted">未评分</div>';txt1.push('【'+d.name+'】未评分（权重'+d.weight+'%）');}
+  if(!brief||sc!==undefined)repHtml+='<div class="dim-block '+cls+'">'+inner+'</div>';
+ });
+ repHtml+='</div></div>';
+
+ // 输出03 证据摘要
+ repHtml+='<div class="rep-sec"><div class="rs-title">输出03 · 回答证据摘要（引用关键原话与事实）</div><div class="rs-body">';
+ var evHtml='',evTxt=[];
+ (j.i_answers||'').split('\n').filter(a=>a.trim()).forEach(a=>{ evHtml+='<div class="q-quote">'+esc(a)+'</div>'; evTxt.push('· '+a); });
+ if(!evHtml)evHtml='<div class="muted">（未录入关键回答摘录 —— 建议从逐字稿摘取 3-6 条关键原话，支撑评分）</div>';
+ repHtml+=evHtml;
+ if(j.i_notes){ repHtml+='<div class="muted" style="margin-top:8px;">面试官现场笔记：</div>'; (j.i_notes).split('\n').filter(a=>a.trim()).forEach(a=>{ repHtml+='<div>· '+esc(a)+'</div>'; evTxt.push('· 笔记：'+a); }); }
+ repHtml+='</div></div>';
+
+ // 输出02 录用建议
+ var recTxt='';
+ if(j.o_recommend==='yes'){ recTxt='<span class="badge '+(r.rec==='强烈推荐'||r.rec==='推荐录用'?'hi':(r.rec==='备选观察'?'mid':'lo'))+'">'+r.rec+'</span> <b>理由：</b>'+esc(r.recWhy);
+  var risks=j.dims.filter(d=>{var s=j.scores[d.id];return s&&s.score<=2;}).map(d=>d.name+'（'+j.scores[d.id].score+'分）');
+  if(j.k_risk)j.k_risk.split('\n').filter(x=>x.trim()).forEach(x=>risks.push(x));
+  var riskHtml=risks.length?'<ul>'+risks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<div class="muted">暂无显著风险项</div>';
+  repHtml+='<div class="rep-sec"><div class="rs-title">输出02 · 录用建议与评级</div><div class="rs-body"><div style="margin-bottom:8px;">综合评级：<b>'+scaleFmt(r)+'</b>（合格线 '+r.pass+'）｜ '+recTxt+'</div><b>主要风险点：</b>'+riskHtml+'</div></div>';
+  H.push('');H.push('## 录用建议：'+r.rec);H.push('理由：'+r.recWhy); if(risks.length){H.push('主要风险点：');risks.forEach(x=>H.push('- '+x));}
+ } else { repHtml+='<div class="rep-sec"><div class="rs-title">输出02 · 录用建议</div><div class="rs-body">按配置仅提供分数与事实，录用结论由用人方自行判断。综合评级：<b>'+scaleFmt(r)+'</b>（合格线 '+r.pass+'）</div></div>';
+  H.push('');H.push('## 综合评级：'+scaleFmt(r)+'（按配置不给出录用结论）'); }
+
+ // 输出05 后续行动
+ var acts=[];
+ var lowNames=j.dims.filter(d=>{var s=j.scores[d.id];return s&&s.score<=3;}).map(d=>d.name);
+ if(lowNames.length)acts.push('复试重点：针对「'+lowNames.join('、')+'」补充实操案例与追问（建议情景题+事实核查）');
+ if(j.k_risk)j.k_risk.split('\n').filter(x=>x.trim()).forEach(x=>acts.push('待核实：'+x));
+ if(r.rec==='强烈推荐'||r.rec==='推荐录用'){ acts.push('offer沟通要点：'+(j.i_notes&&j.i_notes.indexOf('薪')>-1?'面试中已提及薪资话题，注意期望与预算的差距与激励结构设计':'明确薪资结构、出差补贴与发展路径，避免到岗前反悔')); acts.push('入职风险提示：'+(j.k_years&&/换|跳/.test(j.k_years)?'历史稳定性一般，建议入职后前90天设置里程碑跟进':'按常规新人跟进节奏即可')); }
+ else if(r.rec==='备选观察'){ acts.push('建议：横向对比其他候选人后决策；若推进，先完成风险项背调'); }
+ else{ acts.push('建议：礼貌婉拒， talent pool 归档并注明复活条件（如 1 年后岗位开放再评估）'); }
+ repHtml+='<div class="rep-sec"><div class="rs-title">输出05 · 后续行动建议</div><div class="rs-body"><ul>'+acts.map(a=>'<li>'+esc(a)+'</li>').join('')+'</ul></div></div>';
+ H.push('');H.push('## 后续行动建议');acts.forEach(a=>H.push('- '+a));
+
+ // 输出04 匹配度
+ repHtml+='<div class="rep-sec"><div class="rs-title">输出04 · 岗位匹配度</div><div class="rs-body">与岗位画像加权匹配度：<b>'+r.match+'%</b>（合格线 '+r.pass+' / 5.0，对应 '+(r.pass/5*100).toFixed(0)+'%）｜ 强项：'+(strengths.join('、')||'—')+' ｜ 短板：'+(weak.join('、')||'—')+'</div></div>';
+ H.push('');H.push('## 岗位匹配度：'+r.match+'%');H.push('强项：'+(strengths.join('、')||'—'));H.push('短板：'+(weak.join('、')||'—'));
+
+ // 硬性核对
+ var hardCheck=[];
+ (j.j_hard||'').split('\n').filter(x=>x.trim()).forEach(x=>{ hardCheck.push('□ '+x.trim()); });
+ if(hardCheck.length){ repHtml+='<div class="rep-sec"><div class="rs-title">硬性要求核对（逐条人工勾验）</div><div class="rs-body">'+hardCheck.map(x=>'<div style="padding:3px 0;font-size:12.5px;">'+esc(x)+'</div>').join('')+'</div></div>';
+  H.push('');H.push('## 硬性要求核对（待人工勾验）');hardCheck.forEach(x=>H.push(x)); }
+
+ // 复核位
+ repHtml+='<div class="rep-sec"><div class="rs-title">人工复核（AI 初评，HR 与业务终审）</div><div class="rs-body">'+(j.confirm?('✅ 已复核：'+esc(j.confirm.by)+' · '+esc(j.confirm.result)+' · '+esc(j.confirm.time)+(j.confirm.note?' ｜ 意见：'+esc(j.confirm.note):'')):'⏳ 待复核 —— 请 HR/用人经理在「评估标准 · 合规 · 留痕」页提交终审结论。')+'</div></div>';
+
+ var fullTxt=H.join('\n');
+ // 逐维度详情（文本版，非精简时）
+ if(!brief){ fullTxt+='\n\n## 逐维度评分明细\n'+txt1.join('\n'); }
+ if(evTxt.length){ fullTxt+='\n\n## 证据摘要\n'+evTxt.join('\n'); }
+
+ j.report=fullTxt; j.reportHtml=repHtml; save();
+ document.getElementById('reportArea').innerHTML=repHtml;
+ document.getElementById('printMeta').textContent=(j.o_reportno||'')+' · '+(j.k_name||'')+' · '+(j.j_title||'');
+ scanLegal(true);
+ toast('报告已生成'); }
+
+function reportToText(){ return cur().report||''; }
+function copyReport(){ var t=reportToText(); if(!t){toast('请先生成报告');return;} openModal('评估报告全文（可复制）',t); }
+function downloadReport(){ var j=cur(); if(!j.report){toast('请先生成报告');return;}
+ var blob=new Blob([j.report],{type:'text/markdown;charset=utf-8'}); var a=document.createElement('a');
+ a.href=URL.createObjectURL(blob); a.download=(j.o_reportno||'评估报告')+'_'+(j.k_name||'候选人')+'.md'; a.click(); j.logs.push({t:now(),a:'下载报告 .md'}); save(); }
+
+/* ================= 对比 ================= */
+function renderCompare(){ var box=document.getElementById('compareArea');
+ var rows=jobs.map(j=>{ var r=(function(){ var sw=0,ws=0,min=99; j.dims.forEach(d=>{var s=j.scores[d.id]; if(s&&s.score!==undefined){sw+=d.weight;ws+=s.score*d.weight;if(s.score<min)min=s.score;}}); if(!sw)return null; var t=ws/sw; return {total:t,min:min}; })();
+  var rec=j.report?(j.report.match(/## 录用建议：(.+)/)||[])[1]:''; if(!rec&&r){ rec=r.total>=4.2?'强烈推荐':(r.total>=3.5?'推荐录用':(r.total>=2.8?'备选观察':'不推荐')); }
+  return {j:j,r:r,rec:rec||'—'}; }).filter(x=>x.r).sort((a,b)=>b.r.total-a.r.total);
+ if(!rows.length){ box.innerHTML='<div class="muted">暂无已评分项目 —— 完成「打分卡录入」后此处自动生成横向对比。</div>'; return; }
+ var h='<table><tr><th>#</th><th>候选人</th><th>岗位</th><th>分级</th><th>加权总分</th><th>匹配度</th><th>最低维度</th><th>建议</th><th>复核状态</th></tr>';
+ rows.forEach((x,i)=>{ h+='<tr><td>'+(i+1)+'</td><td><b>'+esc(x.j.k_name||x.j.name)+'</b></td><td>'+esc(x.j.j_title||'—')+'</td><td>'+esc(x.j.k_grade||'—')+'</td><td><b>'+x.r.total.toFixed(2)+'</b></td><td>'+Math.round(x.r.total/5*100)+'%</td><td>'+x.r.min.toFixed(0)+' 分</td><td><span class="badge '+((x.rec.indexOf('推荐')>-1&&x.rec!=='不推荐')?'hi':(x.rec==='备选观察'?'mid':'lo'))+'">'+esc(x.rec)+'</span></td><td>'+(x.j.confirm?esc(x.j.confirm.result):'待复核')+'</td></tr>'; });
+ h+='</table>'; box.innerHTML=h;
+ window._cmpTxt='候选人\t岗位\t总分\t匹配度\t建议\n'+rows.map((x,i)=>((i+1)+'\t'+(x.j.k_name||'')+'\t'+x.r.total.toFixed(2)+'\t'+Math.round(x.r.total/5*100)+'%\t'+x.rec)).join('\n'); }
+function copyCompare(){ if(window._cmpTxt)openModal('多候选人对比（粘贴到 Excel 可分列）',window._cmpTxt); else toast('暂无对比数据'); }
+
+/* ================= 合规扫描 ================= */
+var BAD_WORDS=[/男怕|女怕/,/35岁|30岁以[下内]|年龄[较偏太]?大/,/已婚未?育|生育计划|打算要孩子/,/本地人|外地[人口]/,/籍贯|老乡[观念]?优势/,/宗教|民族[习惯差异]/,/乙肝|残疾/,/长相|颜值|外貌|胖|矮/,/肯定[是]?不行|这人[废差]/,/感觉[这个人他她]不太/,/一看就[知是]/];
+function scanLegal(silent){ var j=cur(); var parts=[j.i_notes,j.report]; j.dims.forEach(d=>{var s=j.scores[d.id];if(s){parts.push(s.comment);}});
+ var text=parts.filter(Boolean).join('\n'); var hits=[];
+ BAD_WORDS.forEach(re=>{ var m=text.match(re); if(m)hits.push(m[0]); });
+ var box=document.getElementById('legalScan');
+ if(hits.length){ box.textContent='⚠ 检出 '+hits.length+' 处疑似歧视性/主观臆断表述：'+hits.join('、')+' —— 请改为「行为-证据-影响」的客观描述（配套03 合规要求）。'; box.style.color='#fca5a5'; }
+ else{ box.textContent='✅ 未检出歧视性与明显主观臆断表述。检查范围：现场笔记、评语、报告全文（含年龄/性别/婚育/地域/外貌/宗教/健康等敏感维度）。'; box.style.color='#e2e8f0'; }
+ var w=document.getElementById('complianceWarn');
+ if(hits.length){ w.innerHTML='⚠ 合规提醒：报告/评语中检出疑似敏感表述（<b>'+hits.map(esc).join('</b>、<b>')+'</b>），请修改后再对外发送。'; w.classList.add('show'); }
+ else w.classList.remove('show');
+ if(!silent&&!hits.length)toast('扫描完成：未发现问题'); }
+
+/* ================= 复核留痕 ================= */
+function confirmReview(){ var j=cur(); saveAll(false);
+ var by=document.getElementById('r_by').value.trim(), res=document.getElementById('r_result').value, note=document.getElementById('r_note').value.trim();
+ if(!by||!res){toast('请填写复核人与终审结论');return;}
+ j.confirm={by:by,result:res,note:note,time:now()}; j.logs.push({t:now(),a:'人工复核：'+by+' → '+res+(note?'（'+note+'）':'')}); save();
+ renderConfirmState(); renderLog(); toast('复核已留痕'); }
+function renderConfirmState(){ var j=cur(); var box=j.confirm?('✅ 已复核：'+esc(j.confirm.by)+' · '+esc(j.confirm.result)+' · '+j.confirm.time+(j.confirm.note?' ｜ '+esc(j.confirm.note):'')):'⏳ 尚未复核'; }
+function renderLog(){ var j=cur(),box=document.getElementById('logArea'); if(!box)return;
+ box.innerHTML=j.logs.slice().reverse().map(l=>'<div class="check-item"><span class="muted" style="min-width:130px;">'+l.t+'</span><span>'+esc(l.a)+'</span></div>').join('')||'<div class="muted">暂无日志</div>'; }
+function exportLog(){ var j=cur(); var t=j.logs.map(l=>l.t+'\t'+l.a).join('\n'); openModal('审计日志（'+(j.k_name||'')+'）',(j.o_reportno||'')+'\n'+t); }
+
+/* ================= 导入导出 ================= */
+function exportJob(){ saveAll(false); var j=cur(); var blob=new Blob([JSON.stringify(j,null,2)],{type:'application/json'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(j.k_name||j.name)+'.json'; a.click(); j.logs.push({t:now(),a:'导出项目 JSON'}); save(); }
+function importJob(inp){ var f=inp.files[0]; if(!f)return; var rd=new FileReader();
+ rd.onload=function(){ try{ var j=JSON.parse(rd.result); if(!j.id)j.id=uid(); j.name=j.name||('导入项目 '+new Date().toLocaleDateString()); jobs.push(j); curId=j.id; save(); renderSelect(); loadAll(); toast('导入成功'); }catch(e){toast('导入失败：文件格式不正确');} }; rd.readAsText(f); inp.value=''; }
+
+/* ================= 演练数据 ================= */
+function loadDemo(){ var j=cur();
+ j.k_name='张建国'; j.k_company='某大型农化集团 · 省区经理'; j.k_grade='B'; j.k_source='Boss直聘投递 · 筛选智能体评分 78'; j.k_years='8年 · 近3年换2家'; j.k_interviewer='王经理 / 李HR';
+ j.j_title='市场销售（农资渠道）'; j.j_level='专员-经理级，向大区总监汇报'; j.j_passline='3.0';
+ j.j_req='负责县域农资渠道开拓与维护，线下拜访农资店老板，促成铺货与复购，考核铺货率与回款率';
+ j.j_hard='3年以上渠道|大客户销售经验\n农资|农化|化肥|种子行业背景\n可适应长期出差';
+ j.j_plus='有县域经销商资源\n农学|植保相关专业';
+ j.k_bg='8年农化渠道销售，现任省区经理带6人\n项目：华中新市场从0开拓，2年做到年销3000万\n项目：县域经销商从37家扩到120家';
+ j.k_risk='近3年换2家公司，稳定性存疑\n业绩数据口径不清（个人贡献vs平台）\n期望薪资高于预算20%';
+ j.k_focus='市场开拓能力\n稳定性与动机';
+ j.i_round='复面 · 业务经理+HR 双人 · 45分钟 · 线下'; j.i_date='2026-10-15';
+ j.i_scorecard='Q1 请讲一个从0开拓县域市场的经历（考察：市场开拓能力，权重25%）\nQ2 农资赊销账期与冬储压货怎么管？（考察：行业与产品知识）\nQ3 店老板嫌价格贵怎么谈？（考察：沟通与建立信任）\nQ4 长期出差县域，家里怎么看？（考察：抗压与执行、稳定性）';
+ j.i_transcript='（示例）王经理：讲讲你从0开拓一个县的经历。张建国：我在华中负责一个空白县，头三个月跑了40多家农资店，前期基本不谈货，先帮店里理陈列、教店员认产品……';
+ j.i_answers='市场开拓能力：「我头三个月跑了40多家店，前期基本不谈货，先帮店里理陈列、教店员认产品，第二个月开始有自然返单」\n行业与产品知识：「赊销要设红线，超过60天直接停货，冬储提前一个月锁定政策」\n稳定性与动机：「上一家平台到了天花板，想找更前线能自己干事的机会」';
+ j.i_notes='表达有条理，提到具体店名和数字\n谈薪期望略高于预算\n离职原因讲得具体，可信';
+ j.o_detail='std'; j.o_recommend='yes'; j.o_scale='5'; j.o_style='pro'; j.o_audience='业务负责人（用人经理）';
+ var S={}; var vals=[4,4,4,3,3,3];
+ j.dims.forEach((d,i)=>{ S[d.id]={score:vals[i],quote:['我头三个月跑了40多家店，前期不谈货，先帮店里理陈列','赊销设红线，超60天停货；冬储提前一个月锁定政策','跟店老板先做朋友，帮他把货卖出去我再赚差价','长期出差没问题，家里都支持，之前也是外派','新产品出来我先在自己责任田试种一遍','上一家到了天花板，想找更前线能自己干事的机会'][i]||'',comment:['案例有数字有方法细节，可信度较高','专业口径清楚，有实操红线意识','关系建立方式具体可信，但缺硬谈判案例','意愿明确，但稳定性历史存疑待背调','有自驱学习证据，深度一般','动机具体，但需核实离职真实原因'][i]||''}; });
+ j.scores=S; save(); loadAll(); goto('p1'); toast('示例已载入：张建国 · 市场销售'); }
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* init */
+load(); renderSelect(); loadAll();
+</script>
+</body>
+</html>
